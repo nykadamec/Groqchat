@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Chat Assistant with Vision</title>
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="new-chat-btn" id="newChatBtn">
+        <i class="fas fa-plus"></i>
+        Nový chat
+      </button>
+    </div>
+    <div class="chats-list" id="chatsList">
+      <!-- Chat items will be populated here -->
+    </div>
+  </div>
+
+  <!-- Mobile sidebar toggle -->
+  <button class="sidebar-toggle icon-button" id="sidebarToggle">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="header">
+      <h1><i class="fas fa-eye"></i> AI Vision Chat</h1>
+      <div class="header-icons">
+        <button id="menuBtn" class="icon-button" aria-label="Menu"><i class="fas fa-bars"></i></button>
+        <button id="infoBtn" class="icon-button" aria-label="Informace"><i class="fas fa-info-circle"></i></button>
+        <button id="settingsBtn" class="icon-button" aria-label="Nastavení"><i class="fas fa-cog"></i></button>
+      </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+      <div class="messages-container" id="messagesContainer">
+        <div class="message assistant">
+          <div class="message-avatar"><i class="fas fa-robot"></i></div>
+          <div class="message-content">
+            <div class="message-text">
+              Ahoj! Jsem AI asistent s podporou vision. Mohu analyzovat obrázky a odpovídat na otázky. Jak vám mohu pomoci?
+            </div>
+          </div>
+        </div>
+
+        <!-- Typing indicator -->
+        <div class="message assistant typing-message" id="typingMessage">
+          <div class="message-avatar"><i class="fas fa-robot"></i></div>
+          <div class="message-content">
+            <div class="typing-indicator active">
+              Model píše
+              <div class="typing-dots">
+                <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Composer Area -->
+      <div class="composer-area">
+        <div class="suggestion-chips">
+          <div class="suggestion-chip" data-text="Analyzuj tento obrázek">Analyzuj obrázek</div>
+          <div class="suggestion-chip" data-text="Co vidíš na tomto obrázku?">Co vidíš?</div>
+          <div class="suggestion-chip" data-text="Popiš detaily na této fotce">Popiš detaily</div>
+          <div class="suggestion-chip" data-text="Jaké barvy převládají?">Jaké barvy?</div>
+          <div class="suggestion-chip" data-text="Identifikuj objekty">Identifikuj objekty</div>
+        </div>
+
+        <div class="composer">
+          <div class="drag-overlay" id="dragOverlay">
+            <div class="drag-text"><i class="fas fa-cloud-upload-alt"></i> Přetáhni soubory sem</div>
+          </div>
+          <div class="upload-progress" id="uploadProgress">
+            <div class="upload-progress-bar" id="uploadProgressBar"></div>
+          </div>
+          <div class="attachments" id="attachments"></div>
+          <div class="commands-hint" id="commandsHint">Použij "/" pro příkazy</div>
+
+          <div class="input-area">
+            <div class="textarea-container">
+              <label for="composer-input" class="sr-only">Zpráva pro AI</label>
+              <textarea id="composer-input" class="composer-textarea" rows="1" 
+                placeholder="ask me… (tip: přidej obrázek pro vision analýzu)" 
+                aria-describedby="char-counter error-region"></textarea>
+            </div>
+
+            <div style="position: relative;">
+              <button class="attachment-button" id="attachmentBtn" aria-label="Přidat přílohu" aria-expanded="false">
+                <i class="fas fa-plus"></i>
+              </button>
+              <div class="attachment-menu" id="attachmentMenu">
+                <button class="attachment-menu-item" data-type="image">
+                  <i class="fas fa-image"></i> Obrázek
+                </button>
+                <button class="attachment-menu-item" data-type="file">
+                  <i class="fas fa-file"></i> Soubor
+                </button>
+                <button class="attachment-menu-item" data-type="camera">
+                  <i class="fas fa-camera"></i> Kamera
+                </button>
+              </div>
+              <input type="file" id="fileInput" style="display:none" multiple accept="*/*">
+              <input type="file" id="imageInput" style="display:none" multiple accept="image/*">
+              <input type="file" id="cameraInput" style="display:none" accept="image/*" capture="environment">
+            </div>
+
+            <button class="send-button" id="sendButton" disabled aria-label="Odeslat zprávu">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+
+          <div class="controls">
+            <div class="controls-left">
+              <div class="control-item">
+                <span>Streaming</span>
+                <div class="toggle-switch active" id="streamingToggle" role="switch" aria-checked="true" tabindex="0"></div>
+              </div>
+              <div class="control-item">
+                <span>Enter = odeslat</span>
+                <div class="toggle-switch" id="enterToggle" role="switch" aria-checked="false" tabindex="0"></div>
+              </div>
+            </div>
+            <div class="token-counter" id="charCounter">0 / 4000</div>
+          </div>
+
+          <div class="action-buttons" id="actionButtons">
+            <button class="action-button stop" id="stopButton">
+              <i class="fas fa-stop"></i> Stop
+            </button>
+            <button class="action-button" id="regenerateButton">
+              <i class="fas fa-redo"></i> Regenerovat
+            </button>
+          </div>
+        </div>
+
+        <div class="error-message" aria-live="polite" id="errorMessage"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" aria-hidden="true">
+    <div class="modal" role="document">
+      <div class="modal-header">
+        <h2 id="settingsTitle" class="modal-title">Nastavení API a Modelu</h2>
+        <button id="closeSettingsBtn" class="modal-close-button" aria-label="Zavřít nastavení">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="settingsForm">
+        <div>
+          <label for="apiKeyInput">Groq API Key</label>
+          <input type="password" id="apiKeyInput" name="apiKey" autocomplete="off" 
+            placeholder="Vložte váš Groq API klíč" />
+        </div>
+        <div>
+          <label for="modelSelect">Vision Model</label>
+          <select id="modelSelect" name="model">
+            <option value="meta-llama/llama-4-scout-17b-16e-instruct" selected>LLaMA 4 Scout (Vision)</option>
+            <option value="meta-llama/llama-4-maverick-17b-128e-instruct">LLaMA 4 Maverick (Vision)</option>
+          </select>
+        </div>
+        <div>
+          <label for="temperatureInput">Teplota (0.0 - 2.0)</label>
+          <input type="number" id="temperatureInput" name="temperature" min="0" max="2" step="0.1" value="0.7" />
+        </div>
+        <div>
+          <label for="maxTokensInput">Max tokeny</label>
+          <input type="number" id="maxTokensInput" name="maxTokens" min="1" max="8192" value="2048" />
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="historyToggle" name="history" checked />
+          <label for="historyToggle">Ukládat historii chatu</label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancelSettingsBtn">Zrušit</button>
+          <button type="submit" class="btn btn-primary">Uložit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
