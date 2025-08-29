@@ -26,6 +26,7 @@ body {
   color: var(--text-color);
   height: 100vh;
   display: flex;
+  overflow-x: hidden;
 }
 
 /* Sidebar */
@@ -124,6 +125,7 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  overflow-x: hidden;
 }
 
 .header {
@@ -195,6 +197,7 @@ body {
   display: flex;
   gap: 12px;
   max-width: 80%;
+  min-width: 0;
 }
 
 .message.user {
@@ -233,6 +236,9 @@ body {
   padding: 12px 16px;
   box-shadow: var(--shadow);
   position: relative;
+  min-width: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .message.user .message-content {
@@ -261,7 +267,9 @@ body {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  max-width: 200px;
+  max-width: min(200px, 50vw);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .attachment-preview img {
@@ -901,28 +909,57 @@ body {
 }
 
 @media (max-width: 768px) {
+  /* Prevent horizontal overflow */
+  body {
+    overflow-x: hidden;
+  }
+  
   .sidebar { 
     position: fixed; 
     height: 100vh; 
-    z-index: 50; 
+    z-index: 50;
+    width: min(280px, 80vw);
   }
   .sidebar-toggle { 
     display: block; 
   }
   .main-content { 
-    margin-left: 0; 
+    margin-left: 0;
+    width: 100%;
+    min-width: 0;
   }
   .header {
     padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .header h1 {
+    font-size: 1.1rem;
+    min-width: 0;
+    flex: 1;
+  }
+  .header-icons {
+    flex-shrink: 0;
   }
   .messages-container {
-    padding: 12px;
+    padding: 12px 8px;
   }
   .composer-area {
-    padding: 12px;
+    padding: 12px 8px;
   }
   .message {
-    max-width: 95%;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .message-content {
+    max-width: calc(100vw - 80px);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  .message-text {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
   }
   .controls {
     flex-direction: column;
@@ -932,5 +969,67 @@ body {
   .controls-left {
     width: 100%;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .suggestion-chips {
+    gap: 6px;
+    padding-bottom: 8px;
+  }
+  .suggestion-chip {
+    font-size: 12px;
+    padding: 5px 10px;
+    flex-shrink: 0;
+  }
+  .input-area {
+    padding: 8px;
+    gap: 6px;
+  }
+  .composer-textarea {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+  .attachment-preview {
+    max-width: 150px;
+  }
+  .attachment-thumbnail {
+    width: 50px;
+    height: 50px;
+  }
+  .modal {
+    margin: 16px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 32px);
+  }
+}
+
+/* Additional optimizations for very small screens */
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 1rem;
+  }
+  .sidebar {
+    width: min(260px, 85vw);
+  }
+  .message-content {
+    max-width: calc(100vw - 60px);
+    padding: 10px 12px;
+  }
+  .composer-area {
+    padding: 8px 6px;
+  }
+  .messages-container {
+    padding: 8px 6px;
+  }
+  .suggestion-chip {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  .input-area {
+    padding: 6px;
+    gap: 4px;
+  }
+  .attachment-preview {
+    max-width: 120px;
   }
 }
