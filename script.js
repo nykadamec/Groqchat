@@ -12,13 +12,22 @@ let enterToSend = false;
 let retryCount = 0;
 const MAX_RETRIES = 3;
 
+// Language system
+let translations = {};
+let currentLanguage = 'czech';
+
 let currentSettings = {
   apiKey: '',
   model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-  temperature: 0.7,
-  maxTokens: 2048,
+  temperature: 1,
+  maxTokens: 1024,
+  fontSize: 'normal',
+  language: 'czech',
   saveHistory: true
 };
+
+let lastSendTime = 0;
+const SEND_COOLDOWN = 1000; // 1 second between sends
 
 // ---- DOM Elements ----
 const textarea = document.getElementById('composer-input');
@@ -34,7 +43,9 @@ const regenerateButton = document.getElementById('regenerateButton');
 const chatsList = document.getElementById('chatsList');
 const newChatBtn = document.getElementById('newChatBtn');
 const sidebar = document.getElementById('sidebar');
-const sidebarToggle = document.getElementById('sidebarToggle');
+const menuBtn = document.getElementById('menuBtn');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const themeToggle = document.getElementById('themeToggle');
 
 // ---- Chat Management ----
 function generateChatId() {
@@ -100,7 +111,7 @@ function switchToChat(chatId) {
 }
 
 function deleteChat(chatId) {
-  if (!confirm('Opravdu chcete smazat tento chat?')) return;
+  if (!confirm(t('app.deleteChatConfirm'))) return;
   
   delete chats[chatId];
   
@@ -176,7 +187,10 @@ function clearMessages() {
 // ---- Helper Functions ----
 function initializeGroq(apiKey) {
   try {
-    groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+    groq = new Groq({
+      apiKey: apiKey,
+      dangerouslyAllowBrowser: true
+    });
     return true;
   } catch (err) {
     showError('Chyba při inicializaci Groq API: ' + err.message);
@@ -200,6 +214,11 @@ function loadSettings() {
     updateSettingsForm();
   }
   if (currentSettings.apiKey) initializeGroq(currentSettings.apiKey);
+  applyFontSize(currentSettings.fontSize);
+
+  // Load language file
+  const langFile = currentSettings.language === 'english' ? 'en' : 'cs';
+  loadLanguage(langFile);
 
   if (currentSettings.saveHistory) {
     loadChats();
@@ -207,9 +226,22 @@ function loadSettings() {
 }
 
 function saveSettings(settings) {
+  const previousLanguage = currentSettings.language;
   currentSettings = { ...currentSettings, ...settings };
   localStorage.setItem('chatSettings', JSON.stringify(currentSettings));
   if (settings.apiKey) initializeGroq(settings.apiKey);
+  if (settings.fontSize) applyFontSize(settings.fontSize);
+  
+  // Handle language change
+  if (settings.language && settings.language !== previousLanguage) {
+    const langFile = settings.language === 'english' ? 'en' : 'cs';
+    loadLanguage(langFile);
+  }
+  
+  if (settings.apiKey && !validateApiKey(settings.apiKey)) {
+    showError(t('app.invalidApiKey'));
+  }
+  
   if (!currentSettings.saveHistory) {
     localStorage.removeItem('chats');
     localStorage.removeItem('currentChatId');
@@ -222,9 +254,99 @@ function updateSettingsForm() {
   const form = document.getElementById('settingsForm');
   form.apiKey.value = currentSettings.apiKey || '';
   form.model.value = currentSettings.model || 'meta-llama/llama-4-scout-17b-16e-instruct';
-  form.temperature.value = currentSettings.temperature ?? 0.7;
-  form.maxTokens.value = currentSettings.maxTokens ?? 2048;
+  form.temperature.value = currentSettings.temperature ?? 1;
+  form.maxTokens.value = currentSettings.maxTokens ?? 1024;
+  form.fontSize.value = currentSettings.fontSize || 'normal';
+  form.language.value = currentSettings.language || 'czech';
   form.history.checked = currentSettings.saveHistory !== false;
+  
+  // Update form labels with translations
+  const labels = form.querySelectorAll('label');
+  labels.forEach(label => {
+    const forAttr = label.getAttribute('for');
+    switch(forAttr) {
+      case 'apiKeyInput':
+        label.textContent = t('app.groqApiKey');
+        break;
+      case 'modelSelect':
+        label.textContent = t('app.visionModel');
+        break;
+      case 'temperatureInput':
+        label.textContent = t('app.temperature');
+        break;
+      case 'maxTokensInput':
+        label.textContent = t('app.maxTokens');
+        break;
+      case 'fontSizeSelect':
+        label.textContent = t('app.fontSize');
+        break;
+      case 'languageSelect':
+        label.textContent = t('app.appLanguage');
+        break;
+    }
+  });
+  
+  // Update font size options
+  const fontSizeSelect = document.getElementById('fontSizeSelect');
+  if (fontSizeSelect) {
+    const options = fontSizeSelect.querySelectorAll('option');
+    options.forEach(option => {
+      switch(option.value) {
+        case 'small':
+          option.textContent = t('app.small');
+          break;
+        case 'normal':
+          option.textContent = t('app.normal');
+          break;
+        case 'big':
+          option.textContent = t('app.big');
+          break;
+      }
+    });
+  }
+  
+  // Update language options
+  const languageSelect = document.getElementById('languageSelect');
+  if (languageSelect) {
+    const options = languageSelect.querySelectorAll('option');
+    options.forEach(option => {
+      switch(option.value) {
+        case 'czech':
+          option.textContent = 'Čeština';
+          break;
+        case 'english':
+          option.textContent = 'English';
+          break;
+      }
+    });
+  }
+  
+  // Update checkbox label
+  const historyLabel = form.querySelector('label[for="historyToggle"]');
+  if (historyLabel) historyLabel.textContent = t('app.saveHistory');
+  
+  // Update modal title
+  const modalTitle = document.getElementById('settingsTitle');
+  if (modalTitle) modalTitle.textContent = t('app.settingsTitle');
+  
+  // Update modal close button
+  const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+  if (closeSettingsBtn) closeSettingsBtn.title = t('app.closeSettings');
+  
+  // Update attachment button
+  const attachmentBtn = document.getElementById('attachmentBtn');
+  if (attachmentBtn) attachmentBtn.title = t('app.attachFile');
+  
+  // Update send button
+  const sendButton = document.getElementById('sendButton');
+  if (sendButton) sendButton.title = t('app.sendMessage');
+  
+  // Update buttons
+  const cancelBtn = document.getElementById('cancelSettingsBtn');
+  if (cancelBtn) cancelBtn.textContent = t('app.cancel');
+  
+  const saveBtn = document.querySelector('#settingsForm .btn-primary');
+  if (saveBtn) saveBtn.textContent = t('app.save');
 }
 
 function showError(message) {
@@ -233,8 +355,191 @@ function showError(message) {
   setTimeout(() => errorMessage.classList.remove('active'), 5000);
 }
 
+function validateApiKey(key) {
+  // Basic validation for Groq API key format
+  return key && key.startsWith('gsk_') && key.length > 20;
+}
+
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ---- Language System ----
+async function loadLanguage(lang) {
+  try {
+    const response = await fetch(`/${lang}.json`);
+    if (!response.ok) {
+      throw new Error(`Failed to load ${lang}.json`);
+    }
+    translations = await response.json();
+    currentLanguage = lang;
+    updateUILanguage();
+  } catch (error) {
+    console.error('Error loading language file:', error);
+    // Fallback to default language
+    if (lang !== 'cs') {
+      loadLanguage('cs');
+    }
+  }
+}
+
+function t(key) {
+  const keys = key.split('.');
+  let value = translations;
+  
+  for (const k of keys) {
+    value = value?.[k];
+  }
+  
+  return value || key;
+}
+
+function updateUILanguage() {
+  // Update document title
+  document.title = t('app.title');
+  
+  // Update header elements
+  const headerTitle = document.querySelector('h1');
+  if (headerTitle) headerTitle.innerHTML = `<i class="fas fa-eye"></i> ${t('app.title')}`;
+  
+  // Update buttons
+  const newChatBtn = document.getElementById('newChatBtn');
+  if (newChatBtn) newChatBtn.innerHTML = `<i class="fas fa-plus"></i> ${t('app.newChat')}`;
+  
+  const settingsBtn = document.getElementById('settingsBtn');
+  if (settingsBtn) settingsBtn.title = t('app.settings');
+  
+  const infoBtn = document.getElementById('infoBtn');
+  if (infoBtn) infoBtn.title = t('app.info');
+  
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) themeToggle.title = t('app.theme');
+  
+  const menuBtn = document.getElementById('menuBtn');
+  if (menuBtn) menuBtn.title = t('app.menu');
+  
+  // Update send button
+  const sendButton = document.getElementById('sendButton');
+  if (sendButton) sendButton.title = t('app.send');
+  
+  // Update action buttons
+  const stopButton = document.getElementById('stopButton');
+  if (stopButton) stopButton.innerHTML = `<i class="fas fa-stop"></i> ${t('app.stop')}`;
+  
+  const regenerateButton = document.getElementById('regenerateButton');
+  if (regenerateButton) regenerateButton.innerHTML = `<i class="fas fa-redo"></i> ${t('app.regenerate')}`;
+  
+  // Update composer placeholder
+  const composerInput = document.getElementById('composer-input');
+  if (composerInput) composerInput.placeholder = t('app.askMe');
+  
+  // Update suggestion chips
+  const suggestionChips = document.querySelectorAll('.suggestion-chip');
+  suggestionChips.forEach((chip, index) => {
+    const suggestions = [
+      'app.analyzeImage',
+      'app.whatDoYouSee', 
+      'app.describeDetails',
+      'app.whatColors',
+      'app.identifyObjects'
+    ];
+    if (suggestions[index]) {
+      chip.textContent = t(suggestions[index]);
+    }
+  });
+  
+  // Update controls
+  const streamingToggleLabel = document.querySelector('.control-item:nth-child(1) span');
+  if (streamingToggleLabel) streamingToggleLabel.textContent = t('app.streaming');
+  
+  const enterToggleLabel = document.querySelector('.control-item:nth-child(2) span');
+  if (enterToggleLabel) enterToggleLabel.textContent = t('app.enterToSend');
+  
+  // Update attachment menu items
+  const imageItem = document.querySelector('.attachment-menu-item[data-type="image"]');
+  if (imageItem) imageItem.innerHTML = `<i class="fas fa-image"></i> ${t('app.image')}`;
+  
+  const fileItem = document.querySelector('.attachment-menu-item[data-type="file"]');
+  if (fileItem) fileItem.innerHTML = `<i class="fas fa-file"></i> ${t('app.file')}`;
+  
+  const cameraItem = document.querySelector('.attachment-menu-item[data-type="camera"]');
+  if (cameraItem) cameraItem.innerHTML = `<i class="fas fa-camera"></i> ${t('app.camera')}`;
+  
+  // Update commands hint
+  const commandsHint = document.getElementById('commandsHint');
+  if (commandsHint) commandsHint.textContent = t('app.useCommands');
+  
+  // Update welcome message
+  const messages = document.querySelectorAll('.message.assistant .message-text');
+  if (messages.length > 0 && messages[0].textContent.includes('Ahoj!')) {
+    messages[0].textContent = t('app.welcomeMessage');
+  }
+  
+  // Update typing indicator
+  const typingMessage = document.getElementById('typingMessage');
+  if (typingMessage) {
+    const typingText = typingMessage.querySelector('.typing-indicator');
+    if (typingText) typingText.innerHTML = `${t('app.modelWriting')}<div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  }
+  
+  // Update install banner
+  const installBanner = document.getElementById('installBanner');
+  if (installBanner) {
+    const bannerText = installBanner.querySelector('.install-banner-text span');
+    if (bannerText) bannerText.textContent = t('app.installApp');
+    
+    const installBtn = document.getElementById('installBtn');
+    if (installBtn) installBtn.textContent = t('app.install');
+    
+    const dismissBtn = document.getElementById('dismissInstallBtn');
+    if (dismissBtn) dismissBtn.textContent = t('app.dismiss');
+  }
+  
+  // Update desktop message
+  const desktopMessage = document.getElementById('desktopMessage');
+  if (desktopMessage) {
+    const title = desktopMessage.querySelector('h1');
+    if (title) title.textContent = t('app.mobileApp');
+    
+    const messages = desktopMessage.querySelectorAll('p');
+    if (messages[0]) messages[0].textContent = t('app.mobileOnlyMessage');
+    if (messages[1]) messages[1].textContent = t('app.openOnMobile');
+  }
+}
+
+// ---- Theme Management ----
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  
+  // Update theme toggle icon
+  const icon = themeToggle.querySelector('i');
+  if (newTheme === 'dark') {
+    icon.className = 'fas fa-sun';
+  } else {
+    icon.className = 'fas fa-moon';
+  }
+}
+
+function loadTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  
+  // Set initial icon
+  const icon = themeToggle.querySelector('i');
+  if (savedTheme === 'dark') {
+    icon.className = 'fas fa-sun';
+  } else {
+    icon.className = 'fas fa-moon';
+  }
+}
+
+function applyFontSize(size) {
+  document.body.classList.remove('font-size-small', 'font-size-normal', 'font-size-big');
+  document.body.classList.add(`font-size-${size}`);
 }
 
 function getBackoffDelay(retryCount) {
@@ -365,7 +670,7 @@ async function prepareMessageContent(message, atts) {
         content.push({ type: 'image_url', image_url: { url: base64 } });
       } catch (err) {
         console.error('Image process error', err);
-        showError(`Chyba při zpracování obrázku: ${a.name || ''}`);
+        showError(`${t('app.imageProcessingError')}: ${a.name || ''}`);
       }
     }
   }
@@ -373,75 +678,28 @@ async function prepareMessageContent(message, atts) {
 }
 
 // ---- API Functions ----
-async function sendMessageWithRetry(messages, isStreaming, signal) {
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${currentSettings.apiKey}`
-        },
-        body: JSON.stringify({
-          messages,
-          model: currentSettings.model,
-          temperature: currentSettings.temperature,
-          max_completion_tokens: currentSettings.maxTokens,
-          top_p: 1,
-          stream: isStreaming,
-          stop: null
-        }),
-        signal
-      });
-
-      if (response.ok) {
-        retryCount = 0;
-        return response;
-      }
-
-      if (response.status === 429 || response.status >= 500) {
-        if (attempt < MAX_RETRIES) {
-          const backoffDelay = getBackoffDelay(attempt);
-          console.log(`Attempt ${attempt + 1} failed with status ${response.status}, retrying in ${backoffDelay}ms`);
-          showError(`Příliš mnoho požadavků, zkouším znovu za ${Math.round(backoffDelay/1000)}s...`);
-          await delay(backoffDelay);
-          continue;
-        }
-      }
-
-      let detail = '';
-      try {
-        const e = await response.json();
-        detail = e?.error?.message || '';
-      } catch {}
-      throw new Error(detail || `HTTP ${response.status}: Request failed`);
-
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        throw error;
-      }
-
-      if (attempt === MAX_RETRIES) {
-        throw error;
-      }
-
-      console.log(`Attempt ${attempt + 1} failed:`, error.message);
-      if (attempt < MAX_RETRIES) {
-        const backoffDelay = getBackoffDelay(attempt);
-        await delay(backoffDelay);
-      }
-    }
-  }
-}
 
 async function sendMessage() {
   const message = textarea.value.trim();
   if (!message && !attachments.length) return;
 
-  if (!groq || !currentSettings.apiKey) {
-    showError('Prosím nastavte API klíč v nastavení');
+  // Rate limiting
+  const now = Date.now();
+  if (now - lastSendTime < SEND_COOLDOWN) {
+    showError(t('app.waitBeforeSend'));
     return;
   }
+  lastSendTime = now;
+
+  if (!groq || !currentSettings.apiKey || !validateApiKey(currentSettings.apiKey)) {
+    showError(t('app.invalidApiKeyError'));
+    return;
+  }
+
+  // Show loading overlay
+  loadingOverlay.classList.add('active');
+  sendButton.disabled = true;
+  regenerateButton.disabled = true;
 
   if (!currentChatId || !chats[currentChatId]) {
     createNewChat();
@@ -457,7 +715,10 @@ async function sendMessage() {
         a.base64 = a.base64 || await fileToBase64(a.file); 
       }
       catch { 
-        showError(`Chyba při zpracování obrázku: ${a.name}`); 
+        showError(`${t('app.imageProcessingError')}: ${a.name}`); 
+        loadingOverlay.classList.remove('active');
+        sendButton.disabled = false;
+        regenerateButton.disabled = false;
         return; 
       }
     }
@@ -479,10 +740,13 @@ async function sendMessage() {
   attachments = [];
   updateAttachments();
   adjustTextareaHeight();
-  sendButton.disabled = true;
+
+  const systemMessage = currentSettings.language === 'english' 
+    ? 'You are a helpful AI assistant with vision support. You can analyze images and answer questions in English.'
+    : 'Jsi užitečný AI asistent s podporou vision. Můžeš analyzovat obrázky a odpovídat na otázky v češtině.';
 
   const messages = [
-    { role: 'system', content: 'Jsi užitečný AI asistent s podporou vision. Můžeš analyzovat obrázky a odpovídat na otázky v češtině.' },
+    { role: 'system', content: systemMessage },
     ...sanitizeHistoryForApi(currentChat.messages)
   ];
 
@@ -496,42 +760,69 @@ async function sendMessage() {
     const streamingEnabled = document.getElementById('streamingToggle').classList.contains('active');
 
     if (streamingEnabled) {
-      const response = await sendMessageWithRetry(messages, true, streamController.signal);
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
+      let stream;
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          stream = await groq.chat.completions.create({
+            messages,
+            model: currentSettings.model,
+            temperature: currentSettings.temperature,
+            max_completion_tokens: currentSettings.maxTokens,
+            top_p: 1,
+            stream: true,
+            stop: null
+          });
+          break; // Success, exit retry loop
+        } catch (error) {
+          if (error.name === 'AbortError' || attempt === MAX_RETRIES) {
+            throw error;
+          }
+          console.log(`Streaming attempt ${attempt + 1} failed:`, error.message);
+          if (attempt < MAX_RETRIES) {
+            const backoffDelay = getBackoffDelay(attempt);
+            showError(`${t('app.connectionError')} ${Math.round(backoffDelay/1000)}${t('app.seconds')}...`);
+            await delay(backoffDelay);
+          }
+        }
+      }
 
       hideTyping();
       assistantMessage = addMessage('assistant', '');
 
-      while (isStreaming && !streamController.signal.aborted) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-        for (const line of lines) {
-          if (!line.startsWith(' ')) continue;
-          const data = line.slice(6).trim();
-          if (!data) continue;
-          if (data === '[DONE]') { isStreaming = false; break; }
-          try {
-            const json = JSON.parse(data);
-            const delta = json.choices?.[0]?.delta?.content;
-            if (delta) {
-              fullResponse += delta;
-              updateMessage(assistantMessage, fullResponse);
-            }
-          } catch { /* ignore */ }
+      for await (const chunk of stream) {
+        if (!isStreaming || streamController.signal.aborted) break;
+        const delta = chunk.choices?.[0]?.delta?.content;
+        if (delta) {
+          fullResponse += delta;
+          updateMessage(assistantMessage, fullResponse);
         }
       }
     } else {
-      const response = await groq.chat.completions.create({
-        messages,
-        model: currentSettings.model,
-        temperature: currentSettings.temperature,
-        max_completion_tokens: currentSettings.maxTokens,
-        stream: false,
-        signal: streamController.signal
-      });
+      let response;
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          response = await groq.chat.completions.create({
+            messages,
+            model: currentSettings.model,
+            temperature: currentSettings.temperature,
+            max_completion_tokens: currentSettings.maxTokens,
+            top_p: 1,
+            stream: false,
+            stop: null
+          });
+          break; // Success, exit retry loop
+        } catch (error) {
+          if (error.name === 'AbortError' || attempt === MAX_RETRIES) {
+            throw error;
+          }
+          console.log(`Non-streaming attempt ${attempt + 1} failed:`, error.message);
+          if (attempt < MAX_RETRIES) {
+            const backoffDelay = getBackoffDelay(attempt);
+            showError(`${t('app.connectionError')} ${Math.round(backoffDelay/1000)}${t('app.seconds')}...`);
+            await delay(backoffDelay);
+          }
+        }
+      }
       hideTyping();
       fullResponse = response.choices?.[0]?.message?.content || '';
       assistantMessage = addMessage('assistant', fullResponse);
@@ -544,14 +835,17 @@ async function sendMessage() {
   } catch (err) {
     hideTyping();
     if (err.name === 'AbortError') {
-      showError('Požadavek byl zrušen');
+      showError(t('app.requestCancelled'));
     } else {
-      showError('Chyba při komunikaci s API: ' + err.message);
+      showError(t('app.apiCommunicationError') + ': ' + err.message);
     }
     console.error('API Error:', err);
   } finally {
     isStreaming = false;
     streamController = null;
+    loadingOverlay.classList.remove('active');
+    sendButton.disabled = false;
+    regenerateButton.disabled = false;
   }
 }
 
@@ -602,8 +896,8 @@ function adjustTextareaHeight() {
 
 function handleFiles(files) {
   Array.from(files).forEach(file => {
-    if (file.size > 10*1024*1024) { 
-      showError(`Soubor ${file.name} je příliš velký (max 10MB)`); 
+    if (file.size > 5*1024*1024) { 
+      showError(`${t('app.fileTooLarge')} (${file.name})`); 
       return; 
     }
     const att = {
@@ -634,11 +928,11 @@ function updateAttachments() {
       chip.className = 'attachment-chip image-chip';
       chip.innerHTML = `
         <img src="${att.url || ''}" alt="${att.name}" class="attachment-thumbnail">
-        <button class="attachment-remove" aria-label="Odebrat přílohu" data-id="${att.id}">×</button>
+        <button class="attachment-remove" aria-label="${t('app.removeAttachment') || 'Odebrat přílohu'}" data-id="${att.id}">×</button>
       `;
     } else {
       chip.className = 'attachment-chip';
-      chip.innerHTML = `📄 ${att.name} <button class="attachment-remove" aria-label="Odebrat přílohu" data-id="${att.id}">×</button>`;
+      chip.innerHTML = `📄 ${att.name} <button class="attachment-remove" aria-label="${t('app.removeAttachment') || 'Odebrat přílohu'}" data-id="${att.id}">×</button>`;
     }
     
     attachmentsContainer.appendChild(chip);
@@ -693,9 +987,10 @@ sendButton.addEventListener('click', sendMessage);
 stopButton.addEventListener('click', stopStreaming);
 regenerateButton.addEventListener('click', regenerateResponse);
 newChatBtn.addEventListener('click', createNewChat);
-sidebarToggle.addEventListener('click', () => {
+menuBtn.addEventListener('click', () => {
   sidebar.classList.toggle('hidden');
 });
+themeToggle.addEventListener('click', toggleTheme);
 
 document.querySelectorAll('.toggle-switch').forEach(t => {
   t.addEventListener('click', function() {
@@ -814,11 +1109,13 @@ settingsForm.addEventListener('submit', function(e) {
     model: formData.get('model'),
     temperature: parseFloat(formData.get('temperature')),
     maxTokens: parseInt(formData.get('maxTokens')),
+    fontSize: formData.get('fontSize'),
+    language: formData.get('language'),
     saveHistory: formData.get('history') === 'on'
   };
   saveSettings(settings);
   closeSettings();
-  showError('Nastavení uloženo');
+  showError(t('app.settingsSaved'));
 });
 
 // Drag & Drop
@@ -855,4 +1152,87 @@ document.addEventListener('drop', function(e) {
 
 // ---- Initialize ----
 loadSettings();
+loadTheme();
 adjustTextareaHeight();
+
+// Register service worker for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('Service Worker registered successfully:', registration);
+      })
+      .catch(error => {
+        console.log('Service Worker registration failed:', error);
+      });
+  });
+}
+
+// ---- PWA Install Prompt ----
+let deferredPrompt;
+let installBanner = document.getElementById('installBanner');
+let installBtn = document.getElementById('installBtn');
+let dismissInstallBtn = document.getElementById('dismissInstallBtn');
+
+// Listen for the beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent the mini-infobar from appearing on mobile
+  e.preventDefault();
+  // Stash the event so it can be triggered later
+  deferredPrompt = e;
+  // Show the install banner
+  showInstallBanner();
+});
+
+// Listen for the appinstalled event
+window.addEventListener('appinstalled', (e) => {
+  console.log('PWA was installed');
+  // Hide the install banner
+  hideInstallBanner();
+  // Clear the deferred prompt
+  deferredPrompt = null;
+});
+
+function showInstallBanner() {
+  // Check if banner is already dismissed for this session
+  if (localStorage.getItem('installBannerDismissed')) {
+    return;
+  }
+  
+  installBanner.style.display = 'block';
+}
+
+function hideInstallBanner() {
+  installBanner.style.display = 'none';
+}
+
+function handleInstall() {
+  // Hide the banner
+  hideInstallBanner();
+  
+  // Show the install prompt
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    
+    // Wait for the user to respond to the prompt
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+      // Clear the deferred prompt
+      deferredPrompt = null;
+    });
+  }
+}
+
+function dismissInstallBanner() {
+  hideInstallBanner();
+  // Remember that user dismissed it for this session
+  localStorage.setItem('installBannerDismissed', 'true');
+}
+
+// Event listeners for install banner buttons
+installBtn.addEventListener('click', handleInstall);
+dismissInstallBtn.addEventListener('click', dismissInstallBanner);

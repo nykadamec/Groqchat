@@ -6,11 +6,12 @@
   <title>AI Chat Assistant with Vision</title>
   <!-- Font Awesome CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style/style.css">
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
   <!-- Sidebar -->
-  <div class="sidebar" id="sidebar">
+  <div class="sidebar hidden" id="sidebar">
     <div class="sidebar-header">
       <button class="new-chat-btn" id="newChatBtn">
         <i class="fas fa-plus"></i>
@@ -22,20 +23,32 @@
     </div>
   </div>
 
-  <!-- Mobile sidebar toggle -->
-  <button class="sidebar-toggle icon-button" id="sidebarToggle">
-    <i class="fas fa-bars"></i>
-  </button>
-
   <!-- Main content -->
   <div class="main-content">
     <!-- Header -->
     <div class="header">
-      <h1><i class="fas fa-eye"></i> AI Vision Chat</h1>
-      <div class="header-icons">
+      <div class="header-left">
         <button id="menuBtn" class="icon-button" aria-label="Menu"><i class="fas fa-bars"></i></button>
+        <h1><i class="fas fa-eye"></i> AI Vision Chat</h1>
+      </div>
+      <div class="header-icons">
         <button id="infoBtn" class="icon-button" aria-label="Informace"><i class="fas fa-info-circle"></i></button>
+        <button id="themeToggle" class="icon-button" aria-label="Přepnout téma"><i class="fas fa-moon"></i></button>
         <button id="settingsBtn" class="icon-button" aria-label="Nastavení"><i class="fas fa-cog"></i></button>
+      </div>
+    </div>
+
+    <!-- Install PWA Banner -->
+    <div id="installBanner" class="install-banner" style="display: none;">
+      <div class="install-banner-content">
+        <div class="install-banner-text">
+          <i class="fas fa-mobile-alt"></i>
+          <span>Nainstalujte aplikaci pro lepší zážitek</span>
+        </div>
+        <div class="install-banner-actions">
+          <button id="installBtn" class="install-button">Nainstalovat</button>
+          <button id="dismissInstallBtn" class="dismiss-button">Zavřít</button>
+        </div>
       </div>
     </div>
 
@@ -45,9 +58,7 @@
         <div class="message assistant">
           <div class="message-avatar"><i class="fas fa-robot"></i></div>
           <div class="message-content">
-            <div class="message-text">
-              Ahoj! Jsem AI asistent s podporou vision. Mohu analyzovat obrázky a odpovídat na otázky. Jak vám mohu pomoci?
-            </div>
+            <div class="message-text">Ahoj! Jsem AI asistent s podporou vision. Mohu analyzovat obrázky a odpovídat na otázky. Jak vám mohu pomoci?</div>
           </div>
         </div>
 
@@ -77,10 +88,13 @@
 
         <div class="composer">
           <div class="drag-overlay" id="dragOverlay">
-            <div class="drag-text"><i class="fas fa-cloud-upload-alt"></i> Přetáhni soubory sem</div>
+            <div class="drag-text"></div>
           </div>
           <div class="upload-progress" id="uploadProgress">
             <div class="upload-progress-bar" id="uploadProgressBar"></div>
+          </div>
+          <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-text"><i class="fas fa-spinner fa-spin"></i> Odesílám zprávu...</div>
           </div>
           <div class="attachments" id="attachments"></div>
           <div class="commands-hint" id="commandsHint">Použij "/" pro příkazy</div>
@@ -171,11 +185,26 @@
         </div>
         <div>
           <label for="temperatureInput">Teplota (0.0 - 2.0)</label>
-          <input type="number" id="temperatureInput" name="temperature" min="0" max="2" step="0.1" value="0.7" />
+          <input type="number" id="temperatureInput" name="temperature" min="0" max="2" step="0.1" value="1" />
         </div>
         <div>
           <label for="maxTokensInput">Max tokeny</label>
-          <input type="number" id="maxTokensInput" name="maxTokens" min="1" max="8192" value="2048" />
+          <input type="number" id="maxTokensInput" name="maxTokens" min="1" max="8192" value="1024" />
+        </div>
+        <div>
+          <label for="fontSizeSelect">Velikost písma</label>
+          <select id="fontSizeSelect" name="fontSize">
+            <option value="small">Malé</option>
+            <option value="normal" selected>Normální</option>
+            <option value="big">Velké</option>
+          </select>
+        </div>
+        <div>
+          <label for="languageSelect">Jazyk aplikace</label>
+          <select id="languageSelect" name="language">
+            <option value="czech" selected>Čeština</option>
+            <option value="english">English</option>
+          </select>
         </div>
         <div class="checkbox-group">
           <input type="checkbox" id="historyToggle" name="history" checked />
@@ -189,6 +218,15 @@
     </div>
   </div>
 
-  <script type="module" src="script.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
+
+<!-- Desktop message -->
+<div id="desktopMessage" class="desktop-message">
+  <div class="desktop-message-content">
+    <h1>Mobilní aplikace</h1>
+    <p>Tato aplikace je optimalizována pouze pro mobilní zařízení.</p>
+    <p>Prosím, otevřete ji na telefonu nebo tabletu.</p>
+  </div>
+</div>
