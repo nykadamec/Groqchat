@@ -3,8 +3,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PWA](https://img.shields.io/badge/PWA-Ready-blue.svg)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow.svg)](https://www.ecma-international.org/ecma-262/)
+[![CSS3](https://img.shields.io/badge/CSS3-Modern-blue.svg)](https://www.w3.org/TR/CSS/)
 
 A modern Progressive Web App (PWA) for AI-powered chat conversations with advanced image analysis capabilities. Built with cutting-edge web technologies and powered by Groq's fast AI models.
+
+*Last updated: August 31, 2025*
 
 ## 📋 Table of Contents
 
@@ -27,10 +30,14 @@ A modern Progressive Web App (PWA) for AI-powered chat conversations with advanc
 | 🖼️ Image Analysis | Upload and analyze images with AI | ✅ |
 | 📱 PWA Support | Installable as a mobile/desktop app | ✅ |
 | 🌍 Internationalization | Full Czech and English support | ✅ |
-| 🌓 Dark/Light Theme | Automatic theme switching | ✅ |
-| 💬 Chat History | Persistent chat storage | ✅ |
-| 📱 Responsive Design | Optimized for all devices | ✅ |
+| 🌓 Dark/Light Theme | Automatic theme switching with AMOLED dark mode | ✅ |
+| 💬 Chat History | Persistent chat storage with rename/delete options | ✅ |
+| 📱 Responsive Design | Optimized for all devices with mobile-first approach | ✅ |
 | ⚡ Fast Performance | Built with modern web standards | ✅ |
+| 🎨 Minimalist UI | Clean, modern interface with smooth animations | ✅ |
+| 🔄 Streaming Support | Real-time message streaming with toggle control | ✅ |
+| 📝 Chat Management | Rename and delete individual chats | ✅ |
+| 🎯 Interactive Elements | Hover and click effects on all buttons | ✅ |
 
 ## 📸 Screenshots
 
@@ -76,42 +83,64 @@ A modern Progressive Web App (PWA) for AI-powered chat conversations with advanc
 3. AI will respond with helpful information
 
 ### Image Analysis
-1. Click the image upload button
+1. Click the image upload button (📎)
 2. Select an image from your device
 3. Ask questions about the image
 4. AI will analyze and describe the content
 
+### Advanced Features
+- **Streaming Toggle**: Use the green toggle switch to enable/disable real-time message streaming
+- **Chat Management**: Hover over chat items to see rename (✏️) and delete (🗑️) buttons
+- **Theme Switching**: Click the theme toggle button to switch between light and dark modes
+- **Language Selection**: Choose between Czech and English in settings
+
 ### Settings
-- **Theme**: Toggle between light and dark modes
+- **Theme**: Toggle between light, dark, and AMOLED dark modes
 - **Language**: Switch between Czech and English
 - **API Key**: Update your Groq API key
-- **Clear History**: Remove all chat messages
+- **Model Selection**: Choose from available AI models
+- **Chat History**: Enable/disable persistent chat storage
+- **Clear History**: Remove all chat messages and start fresh
 
 ## 🛠️ Development
 
 ### Project Structure
 ```
 groqchat/
-├── index.html                 # Main HTML file
-├── manifest.json              # PWA manifest
-├── service-worker.js          # Service worker for caching
+├── index.html                 # Main HTML file with sidebar and composer
+├── manifest.json              # PWA manifest for app installation
+├── service-worker.js          # Service worker for offline functionality
 ├── js/
-│   ├── main.js               # Main application entry point
+│   ├── main.js               # Main application entry point and module initialization
 │   └── modules/
-│       ├── config.js         # Configuration and constants
+│       ├── chat.js           # Chat functionality, message handling, and chat management
+│       ├── composer.js       # Composer UI and input handling
+│       ├── config.js         # Configuration constants and API settings
+│       ├── groq.js           # Groq API integration and error handling
 │       ├── i18n.js           # Internationalization system
-│       ├── settings.js       # Settings management
-│       ├── groq.js           # Groq API integration
-│       ├── chat.js           # Chat functionality
-│       ├── ui.js             # UI management and event handlers
-│       └── pwa.js            # PWA functionality
+│       ├── pwa.js            # PWA functionality and install prompts
+│       ├── settings.js       # User settings management
+│       └── ui.js             # UI management and event handlers
 ├── style/
-│   └── style.css             # Main stylesheet
+│   ├── style.css             # Main desktop stylesheet
+│   ├── style-mobile.css      # Mobile-specific styles and responsive design
+│   └── composer.css          # Composer-specific styling
 ├── locales/
-│   ├── cs.json               # Czech translations
-│   └── en.json               # English translations
-└── README.md                 # This file
+│   ├── cs.json               # Czech language translations
+│   └── en.json               # English language translations
+└── README.md                 # Project documentation
 ```
+
+### Technologies Used
+- **Frontend**: Vanilla JavaScript (ES6+), HTML5, CSS3
+- **UI Framework**: Custom CSS with Flexbox and Grid
+- **Animations**: CSS Transitions and Transforms
+- **Icons**: Font Awesome 6
+- **PWA**: Service Worker API, Web App Manifest
+- **Storage**: LocalStorage for chat history and settings
+- **Internationalization**: Custom i18n system
+- **API Integration**: Fetch API for Groq communication
+- **Responsive Design**: Mobile-first approach with media queries
 
 ### Adding New Features
 
@@ -156,7 +185,16 @@ A: Check your Groq API key is valid and has sufficient credits.
 A: Make sure you're serving over HTTPS or localhost.
 
 **Q: Images not uploading?**
-A: Check file size limits and supported formats (JPG, PNG, GIF).
+A: Check file size limits (max 5MB) and supported formats (JPG, PNG, GIF).
+
+**Q: Toggle switch not working?**
+A: The green toggle controls message streaming. Make sure your browser supports modern CSS.
+
+**Q: Chat rename/delete buttons not visible?**
+A: Hover over chat items in the sidebar to reveal the action buttons.
+
+**Q: Dark theme not applying correctly?**
+A: Try refreshing the page or clearing browser cache. The app supports light, dark, and AMOLED themes.
 
 ### Browser Support
 - ✅ Chrome 90+
