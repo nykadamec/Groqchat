@@ -1,0 +1,393 @@
+/* Composer Area - Completely Invisible */
+.composer-area {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
+
+/* New Minimalistic Composer Styles */
+.composer-card {
+  background: var(--bg-white);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  margin: 0 12px 12px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+  position: relative;
+}
+
+.composer-card:focus-within {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Composer Header with Controls - Single Row */
+.composer-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--bg-gray-100);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  gap: 12px;
+  overflow: hidden;
+}
+
+.composer-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.composer-header-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.composer-header-toggle span {
+  white-space: nowrap;
+}
+
+.composer-toggle-switch {
+  position: relative;
+  width: 24px;
+  height: 12px;
+  background: var(--bg-gray-100);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.composer-toggle-switch.active {
+  background: var(--success-color);
+}
+
+.composer-toggle-switch::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,.2);
+}
+
+.composer-toggle-switch.active::after {
+  transform: translateX(12px);
+}
+
+.composer-char-counter {
+  margin-left: auto;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Suggestion Chips Above Composer - Horizontal Scroll */
+.composer-suggestion-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 12px 16px 8px;
+  margin: 0 12px;
+}
+
+.composer-suggestion-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.composer-suggestion-chip {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.composer-suggestion-chip:hover {
+  background: var(--bg-gray-50);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+/* Image preview area */
+.image-preview-area {
+  display: none;
+  padding: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--bg-gray-50);
+  border-bottom: 1px solid var(--bg-gray-100);
+}
+
+.image-preview-area.active {
+  display: flex;
+}
+
+.image-preview-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  width: 80px;
+  height: 80px;
+  background: var(--bg-gray-100);
+}
+
+.image-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-preview-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s ease;
+}
+
+.image-preview-remove:hover {
+  background: var(--error-color);
+}
+
+/* File preview items (for non-image files) */
+.file-preview-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: var(--bg-gray-100);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  position: relative;
+  min-width: 80px;
+  max-width: 120px;
+}
+
+.file-preview-item .file-name {
+  font-size: var(--font-size-xs);
+  color: var(--text-color);
+  text-align: center;
+  margin-top: 4px;
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+.file-preview-item i {
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+/* Input area */
+.composer-input-area {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 16px;
+  position: relative;
+}
+
+.composer-input-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+#composer-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  padding: 0;
+  max-height: 150px;
+  overflow-y: auto;
+  background: transparent;
+  color: var(--text-color);
+  font-family: inherit;
+}
+
+#composer-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Action buttons */
+.composer-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 12px;
+}
+
+.composer-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.composer-btn:hover {
+  background: var(--bg-gray-100);
+  color: var(--text-color);
+}
+
+.composer-btn:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.composer-btn.send-btn {
+  background: var(--primary-color);
+  color: white;
+}
+
+.composer-btn.send-btn:hover {
+  background: var(--primary-hover);
+}
+
+.composer-btn.send-btn:disabled {
+  background: var(--bg-gray-100);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* Upload button container - ensure proper overlay for file input */
+.upload-btn-container {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  /* Ensure proper touch handling */
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+}
+
+.upload-btn {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  /* Ensure button is properly touchable */
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+  transition: all 0.2s ease;
+}
+
+.upload-btn:hover {
+  background: var(--bg-gray-100);
+  color: var(--text-color);
+  transform: scale(1.05);
+}
+
+.upload-btn:active {
+  background: var(--bg-gray-200);
+  transform: scale(0.95);
+}
+
+.upload-btn-container input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 1;
+  /* Ensure touch events work properly */
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+  /* Prevent iOS zoom on focus */
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* Progress indicator for uploads */
+.upload-progress-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--bg-gray-100);
+  overflow: hidden;
+  display: none;
+}
+
+.upload-progress-container.active {
+  display: block;
+}
+
+.upload-progress-bar {
+  height: 100%;
+  background: var(--primary-color);
+  width: 0;
+  transition: width 0.3s ease;
+}
+
+/* Suggestion chips (old style - kept for compatibility) */
+.suggestion-chips {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.suggestion-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.suggestion-chip {
+  background: var(--bg-gray-50);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: var(--font-size-xs);
+  color: var(--text-color);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.suggestion-chip:hover {
+  background: var(--bg-gray-100);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}

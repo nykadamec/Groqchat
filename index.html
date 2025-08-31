@@ -7,6 +7,8 @@
   <!-- Font Awesome CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="style/style.css">
+  <link rel="stylesheet" href="style/style-mobile.css" media="(max-width: 768px)">
+  <link rel="stylesheet" href="style/composer.css">
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
@@ -22,6 +24,9 @@
       <!-- Chat items will be populated here -->
     </div>
   </div>
+
+  <!-- Sidebar overlay for mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
   <!-- Main content -->
   <div class="main-content">
@@ -78,74 +83,65 @@
 
       <!-- Composer Area -->
       <div class="composer-area">
-        <div class="suggestion-chips">
-          <div class="suggestion-chip" data-text="Analyzuj tento obrázek">Analyzuj obrázek</div>
-          <div class="suggestion-chip" data-text="Co vidíš na tomto obrázku?">Co vidíš?</div>
-          <div class="suggestion-chip" data-text="Popiš detaily na této fotce">Popiš detaily</div>
-          <div class="suggestion-chip" data-text="Jaké barvy převládají?">Jaké barvy?</div>
-          <div class="suggestion-chip" data-text="Identifikuj objekty">Identifikuj objekty</div>
+        <!-- Suggestion Chips Above Composer -->
+        <div class="composer-suggestion-chips">
+          <div class="composer-suggestion-chip" data-text="Analyzuj tento obrázek"></div>
+          <div class="composer-suggestion-chip" data-text="Co vidíš na tomto obrázku?"></div>
+          <div class="composer-suggestion-chip" data-text="Popiš detaily na této fotce"></div>
+          <div class="composer-suggestion-chip" data-text="Jaké barvy převládají?"></div>
+          <div class="composer-suggestion-chip" data-text="Identifikuj objekty"></div>
         </div>
-
-        <div class="composer">
-          <div class="drag-overlay" id="dragOverlay">
-            <div class="drag-text"></div>
+        
+        <!-- New Minimalistic Composer Card -->
+        <div class="composer-card">
+          <!-- Single Row Header -->
+          <div class="composer-header">
+            <!-- Controls -->
+            <div class="composer-header-toggle">
+              <span>Streaming</span>
+              <div class="composer-toggle-switch active" id="streamingToggle" role="switch" aria-checked="true" tabindex="0"></div>
+            </div>
+            <div class="composer-header-toggle">
+              <span>Enter = odeslat</span>
+              <div class="composer-toggle-switch" id="enterToggle" role="switch" aria-checked="false" tabindex="0"></div>
+            </div>
+            
+            <!-- Character Counter -->
+            <div class="composer-char-counter" id="charCounter">0 / 4000</div>
           </div>
-          <div class="upload-progress" id="uploadProgress">
-            <div class="upload-progress-bar" id="uploadProgressBar"></div>
-          </div>
-          <div class="loading-overlay" id="loadingOverlay">
-            <div class="loading-text"><i class="fas fa-spinner fa-spin"></i> Odesílám zprávu...</div>
-          </div>
-          <div class="attachments" id="attachments"></div>
-          <div class="commands-hint" id="commandsHint">Použij "/" pro příkazy</div>
-
-          <div class="input-area">
-            <div class="textarea-container">
+          
+          <!-- Image Preview Area -->
+          <div class="image-preview-area" id="attachments"></div>
+          
+          <!-- Input Area -->
+          <div class="composer-input-area">
+            <div class="composer-input-wrapper">
               <label for="composer-input" class="sr-only">Zpráva pro AI</label>
-              <textarea id="composer-input" class="composer-textarea" rows="1" 
+              <textarea id="composer-input" rows="1" 
                 placeholder="ask me… (tip: přidej obrázek pro vision analýzu)" 
-                aria-describedby="char-counter error-region"></textarea>
+                aria-describedby="charCounter error-region"></textarea>
             </div>
-
-            <div style="position: relative;">
-              <button class="attachment-button" id="attachmentBtn" aria-label="Přidat přílohu" aria-expanded="false">
-                <i class="fas fa-plus"></i>
+            
+            <div class="composer-actions">
+              <!-- Upload Image Button -->
+              <div class="upload-btn-container">
+                <button class="composer-btn upload-btn" id="attachmentBtn" aria-label="Nahrát obrázek">
+                  <i class="fas fa-image"></i>
+                </button>
+                <input type="file" id="imageInput" accept="image/*" multiple>
+              </div>
+              
+              <!-- Send Button -->
+              <button class="composer-btn send-btn" id="sendButton" disabled aria-label="Odeslat zprávu">
+                <i class="fas fa-paper-plane"></i>
               </button>
-              <div class="attachment-menu" id="attachmentMenu">
-                <button class="attachment-menu-item" data-type="image">
-                  <i class="fas fa-image"></i> Obrázek
-                </button>
-                <button class="attachment-menu-item" data-type="file">
-                  <i class="fas fa-file"></i> Soubor
-                </button>
-                <button class="attachment-menu-item" data-type="camera">
-                  <i class="fas fa-camera"></i> Kamera
-                </button>
-              </div>
-              <input type="file" id="fileInput" style="display:none" multiple accept="*/*">
-              <input type="file" id="imageInput" style="display:none" multiple accept="image/*">
-              <input type="file" id="cameraInput" style="display:none" accept="image/*" capture="environment">
             </div>
-
-            <button class="send-button" id="sendButton" disabled aria-label="Odeslat zprávu">
-              <i class="fas fa-paper-plane"></i>
-            </button>
           </div>
-
-          <div class="controls">
-            <div class="controls-left">
-              <div class="control-item">
-                <span>Streaming</span>
-                <div class="toggle-switch active" id="streamingToggle" role="switch" aria-checked="true" tabindex="0"></div>
-              </div>
-              <div class="control-item">
-                <span>Enter = odeslat</span>
-                <div class="toggle-switch" id="enterToggle" role="switch" aria-checked="false" tabindex="0"></div>
-              </div>
-            </div>
-            <div class="token-counter" id="charCounter">0 / 4000</div>
-          </div>
-
+          
+          <!-- Other hidden inputs -->
+          <input type="file" id="fileInput" style="display:none" multiple accept="*/*">
+          <input type="file" id="cameraInput" style="display:none" accept="image/*" capture="environment">
+          
           <div class="action-buttons" id="actionButtons">
             <button class="action-button stop" id="stopButton">
               <i class="fas fa-stop"></i> Stop
@@ -155,7 +151,7 @@
             </button>
           </div>
         </div>
-
+        
         <div class="error-message" aria-live="polite" id="errorMessage"></div>
       </div>
     </div>

@@ -7,6 +7,7 @@ import {
   createNewChat,
   switchToChat,
   deleteChat,
+  renameChat,
   updateChatsList,
   loadChats,
   saveChats,
@@ -24,12 +25,14 @@ import {
 } from './modules/chat.js';
 import { updateUILanguage, toggleTheme, loadTheme, applyFontSize, setupEventListeners } from './modules/ui.js';
 import { registerServiceWorker, setupInstallPrompt, setupInstallEventListeners } from './modules/pwa.js';
+import { initComposer } from './modules/composer.js';
 
 // Global reference for external access
 window.chatModule = {
   createNewChat,
   switchToChat,
   deleteChat,
+  renameChat,
   sendMessage,
   stopStreaming,
   regenerateResponse
@@ -68,6 +71,9 @@ async function initApp() {
 
     // Setup settings modal
     setupSettingsModal();
+    
+    // Initialize the new composer
+    initComposer();
 
     // Initial textarea adjustment
     adjustTextareaHeight();
@@ -133,10 +139,23 @@ function setupSettingsModal() {
   if (newChatBtn) newChatBtn.addEventListener('click', createNewChat);
 
   const menuBtn = document.getElementById('menuBtn');
-  if (menuBtn) menuBtn.addEventListener('click', () => {
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) sidebar.classList.toggle('hidden');
-  });
+  const sidebar = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+  if (menuBtn && sidebar) {
+    const toggleSidebar = () => {
+      sidebar.classList.toggle('hidden');
+    };
+
+    menuBtn.addEventListener('click', toggleSidebar);
+
+    // Close sidebar when clicking on overlay
+    if (sidebarOverlay) {
+      sidebarOverlay.addEventListener('click', () => {
+        sidebar.classList.add('hidden');
+      });
+    }
+  }
 
   const themeToggle = document.getElementById('themeToggle');
   if (themeToggle) themeToggle.addEventListener('click', toggleTheme);

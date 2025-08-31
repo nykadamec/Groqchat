@@ -111,6 +111,18 @@ export function deleteChat(chatId) {
   saveChats();
 }
 
+export function renameChat(chatId) {
+  const chat = chats[chatId];
+  if (!chat) return;
+
+  const newTitle = prompt(t('app.renameChatPrompt'), chat.title);
+  if (newTitle && newTitle.trim() && newTitle.trim() !== chat.title) {
+    chat.title = newTitle.trim();
+    updateChatsList();
+    saveChats();
+  }
+}
+
 export function updateChatsList() {
   const chatsList = document.getElementById('chatsList');
   if (!chatsList) return;
@@ -124,9 +136,14 @@ export function updateChatsList() {
     chatItem.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
     chatItem.innerHTML = `
       <div class="chat-title">${chat.title}</div>
-      <button class="chat-delete" onclick="event.stopPropagation(); window.chatModule.deleteChat('${chat.id}')">
-        <i class="fas fa-trash"></i>
-      </button>
+      <div class="chat-actions">
+        <button class="chat-rename" onclick="event.stopPropagation(); window.chatModule.renameChat('${chat.id}')">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="chat-delete" onclick="event.stopPropagation(); window.chatModule.deleteChat('${chat.id}')">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
     `;
 
     chatItem.addEventListener('click', () => switchToChat(chat.id));
@@ -266,11 +283,11 @@ export function adjustTextareaHeight() {
   if (!textarea) return;
 
   textarea.style.height = 'auto';
-  textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+  textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
 }
 
-export function handleFiles(files) {
-  Array.from(files).forEach(file => {
+export async function handleFiles(files) {
+  for (const file of Array.from(files)) {
     if (file.size > 5*1024*1024) {
       showError(`${t('app.fileTooLarge')} (${file.name})`);
       return;
@@ -282,9 +299,19 @@ export function handleFiles(files) {
       type: file.type,
       file
     };
-    if (file.type.startsWith('image/')) att.url = URL.createObjectURL(file);
+
+    // For images, create both blob URL and base64 for better mobile compatibility
+    if (file.type.startsWith('image/')) {
+      att.url = URL.createObjectURL(file);
+      try {
+        att.base64 = await fileToBase64(file);
+      } catch (error) {
+        console.error('Error converting image to base64:', error);
+      }
+    }
+
     attachments.push(att);
-  });
+  }
   updateAttachments();
   const sendButton = document.getElementById('sendButton');
   if (sendButton) {
@@ -298,26 +325,15 @@ export function updateAttachments() {
 
   attachmentsContainer.innerHTML = '';
   if (!attachments.length) {
-    attachmentsContainer.classList.remove('has-files');
+    attachmentsContainer.classList.remove('active');
     return;
   }
-  attachmentsContainer.classList.add('has-files');
-  attachments.forEach(att => {
-    const chip = document.createElement('div');
+  attachmentsContainer.classList.add('active');
 
-    if (att.type?.startsWith('image/')) {
-      chip.className = 'attachment-chip image-chip';
-      chip.innerHTML = `
-        <img src="${att.url || ''}" alt="${att.name}" class="attachment-thumbnail">
-        <button class="attachment-remove" aria-label="${t('app.removeAttachment') || 'Odebrat přílohu'}" data-id="${att.id}">×</button>
-      `;
-    } else {
-      chip.className = 'attachment-chip';
-      chip.innerHTML = `📄 ${att.name} <button class="attachment-remove" aria-label="${t('app.removeAttachment') || 'Odebrat přílohu'}" data-id="${att.id}">×</button>`;
-    }
-
-    attachmentsContainer.appendChild(chip);
-  });
+  // Call the composer's updateImagePreview function if available
+  if (window.composerModule && window.composerModule.updateImagePreview) {
+    window.composerModule.updateImagePreview();
+  }
 }
 
 export function removeAttachment(id) {

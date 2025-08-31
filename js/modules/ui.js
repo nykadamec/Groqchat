@@ -5,8 +5,61 @@ import { handleFiles, removeAttachment, adjustTextareaHeight, updateAttachments,
 
 let enterToSend = false;
 
+// Device detection and viewport handling
+let isMobileDevice = false;
+let viewportHeight = window.innerHeight;
+
 // DOM Elements cache
 const elements = {};
+
+// Device detection functions
+function detectMobileDevice() {
+  const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+  const isMobileUA = /android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(userAgent.toLowerCase());
+
+  const isMobileScreen = window.innerWidth <= 768 || window.innerHeight <= 768;
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  return isMobileUA || (isMobileScreen && hasTouch);
+}
+
+function updateViewportHeight() {
+  const currentHeight = window.innerHeight;
+  if (Math.abs(currentHeight - viewportHeight) > 50) { // Only update if significant change
+    viewportHeight = currentHeight;
+    document.documentElement.style.setProperty('--vh', `${viewportHeight * 0.01}px`);
+    adjustLayoutForViewport();
+  }
+}
+
+function adjustLayoutForViewport() {
+  if (!isMobileDevice) return;
+
+  const chatContainer = getElement('messagesContainer');
+  const composerArea = document.querySelector('.composer-area');
+
+  if (chatContainer && composerArea) {
+    // Ensure proper scrolling behavior
+    chatContainer.style.maxHeight = `calc(${viewportHeight}px - 120px)`; // Account for header and composer
+    chatContainer.style.overflowY = 'auto';
+  }
+}
+
+function setupViewportHandling() {
+  // Set initial viewport height
+  document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+
+  // Listen for viewport changes (keyboard, orientation, etc.)
+  window.addEventListener('resize', updateViewportHeight);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(updateViewportHeight, 100); // Delay to allow orientation change to complete
+  });
+
+  // Handle visual viewport API for better mobile keyboard handling
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', updateViewportHeight);
+  }
+}
 
 function getElement(id) {
   if (!elements[id]) {
@@ -55,7 +108,7 @@ export function updateUILanguage() {
   if (composerInput) composerInput.placeholder = t('app.askMe');
 
   // Update suggestion chips
-  const suggestionChips = document.querySelectorAll('.suggestion-chip');
+  const suggestionChips = document.querySelectorAll('.suggestion-chip, .composer-suggestion-chip');
   suggestionChips.forEach((chip, index) => {
     const displaySuggestions = [
       'app.analyzeImage',
@@ -80,10 +133,10 @@ export function updateUILanguage() {
   });
 
   // Update controls
-  const streamingToggleLabel = document.querySelector('.control-item:nth-child(1) span');
+  const streamingToggleLabel = document.querySelector('.composer-header-toggle:nth-child(1) span');
   if (streamingToggleLabel) streamingToggleLabel.textContent = t('app.streaming');
 
-  const enterToggleLabel = document.querySelector('.control-item:nth-child(2) span');
+  const enterToggleLabel = document.querySelector('.composer-header-toggle:nth-child(2) span');
   if (enterToggleLabel) enterToggleLabel.textContent = t('app.enterToSend');
 
   // Update attachment menu items
@@ -187,6 +240,15 @@ export function applyFontSize(size) {
 }
 
 export function setupEventListeners() {
+  // Detect mobile device
+  isMobileDevice = detectMobileDevice();
+
+  // Setup viewport handling for mobile devices
+  if (isMobileDevice) {
+    setupViewportHandling();
+    adjustLayoutForViewport();
+  }
+
   // Composer input
   const textarea = getElement('composer-input');
   const sendButton = getElement('sendButton');
@@ -223,14 +285,19 @@ export function setupEventListeners() {
     });
   }
 
-  // Toggle switches
-  document.querySelectorAll('.toggle-switch').forEach(t => {
+  // Toggle switches - handle both old and new composer toggles
+  document.querySelectorAll('.toggle-switch, .composer-toggle-switch').forEach(t => {
     t.addEventListener('click', function() {
       const active = this.classList.contains('active');
       this.classList.toggle('active');
       this.setAttribute('aria-checked', String(!active));
-      if (this.id === 'enterToggle') enterToSend = !active;
+
+      // Update enterToSend variable when enter toggle is clicked
+      if (this.id === 'enterToggle') {
+        enterToSend = !active;
+      }
     });
+
     t.addEventListener('keydown', function(e) {
       if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
@@ -293,19 +360,29 @@ export function setupEventListeners() {
     }
   });
 
-  // Attachment removal
+  // Upload button click handler
+  const uploadBtn = document.querySelector('.upload-btn');
+  if (uploadBtn && imageInput) {
+    uploadBtn.addEventListener('click', () => {
+      imageInput.click();
+    });
+  }
+
+  // Attachment removal - handle both old and new composer
   const attachmentsContainer = getElement('attachments');
   if (attachmentsContainer) {
     attachmentsContainer.addEventListener('click', e => {
-      if (e.target.classList.contains('attachment-remove')) {
-        removeAttachment(e.target.dataset.id);
+      const removeBtn = e.target.closest('.attachment-remove, .image-preview-remove');
+      if (removeBtn) {
+        const id = removeBtn.dataset.id;
+        if (id) removeAttachment(id);
       }
     });
   }
 
   // Suggestion chips
-  document.querySelector('.suggestion-chips').addEventListener('click', e => {
-    const chip = e.target.closest('.suggestion-chip');
+  document.querySelector('.suggestion-chips, .composer-suggestion-chips').addEventListener('click', e => {
+    const chip = e.target.closest('.suggestion-chip, .composer-suggestion-chip');
     if (!chip) return;
     const text = chip.dataset.text || chip.textContent;
     if (textarea) {
@@ -353,3 +430,6 @@ export function setupEventListeners() {
     }
   });
 }
+
+// Export device detection functions
+export { detectMobileDevice, isMobileDevice, updateViewportHeight, adjustLayoutForViewport };

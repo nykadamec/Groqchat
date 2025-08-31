@@ -1,6 +1,7 @@
 // ---- Settings Management ----
 import { DEFAULT_SETTINGS } from './config.js';
 import { loadLanguage, t } from './i18n.js';
+import { updateUILanguage } from './ui.js';
 
 let currentSettings = { ...DEFAULT_SETTINGS };
 
@@ -30,6 +31,8 @@ export async function saveSettings(newSettings) {
   if (newSettings.language && newSettings.language !== previousLanguage) {
     const langFile = newSettings.language === 'english' ? 'en' : 'cs';
     await loadLanguage(langFile);
+    // Update UI with new language
+    updateUILanguage();
   }
 
   return currentSettings;

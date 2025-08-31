@@ -1,0 +1,647 @@
+/* Mobile-specific styles for compact composer */
+/* Only loaded on mobile devices (max-width: 768px) */
+
+/* Compact composer area for mobile */
+@media (max-width: 768px) {
+  .composer-area {
+    padding: 6px;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom));
+    font-size: var(--font-size-sm);
+  }
+
+  /* Smaller suggestion chips */
+  .suggestion-chips {
+    gap: 4px;
+    margin-bottom: 6px;
+    font-size: var(--font-size-sm);
+  }
+
+  .suggestion-chip {
+    padding: 3px 6px;
+    font-size: var(--font-size-xs);
+    border-radius: 12px;
+  }
+
+  /* Compact composer container */
+  .composer {
+    border-radius: 8px;
+    font-size: var(--font-size-sm);
+  }
+
+  /* Smaller attachment thumbnails */
+  .attachment-thumbnail {
+    width: 40px;
+    height: 40px;
+    font-size: var(--font-size-xs);
+  }
+
+  .attachment-remove {
+    width: 16px;
+    height: 16px;
+    font-size: var(--font-size-xs);
+  }
+
+  /* Compact input area */
+  .input-area {
+    padding: 6px;
+    min-height: 40px;
+    gap: 4px;
+    font-size: var(--font-size-sm);
+  }
+
+  .composer-textarea {
+    font-size: var(--font-size-sm);
+    padding: 6px 0;
+    min-height: 20px;
+    line-height: 1.3;
+  }
+
+  /* Smaller buttons */
+  .attachment-button,
+  .send-button {
+    width: 32px;
+    height: 32px;
+    font-size: var(--font-size-sm);
+  }
+
+  .attachment-button {
+    border-radius: 6px;
+  }
+
+  .send-button {
+    border-radius: 6px;
+  }
+
+  /* Compact controls - always horizontal on mobile */
+  .controls {
+    padding: 3px 6px;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+  }
+
+  .controls-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;
+  }
+
+  .control-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: var(--font-size-xs);
+  }
+
+  .control-item span {
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+  }
+
+  .toggle-switch {
+    width: 28px;
+    height: 14px;
+  }
+
+  .toggle-switch::after {
+    width: 10px;
+    height: 10px;
+    top: 2px;
+    left: 2px;
+  }
+
+  .toggle-switch.active::after {
+    transform: translateX(14px);
+  }
+
+  /* Compact action buttons */
+  .action-buttons {
+    padding: 3px 6px;
+    font-size: var(--font-size-sm);
+  }
+
+  .action-button {
+    padding: 4px 8px;
+    font-size: var(--font-size-xs);
+    border-radius: 4px;
+    gap: 3px;
+  }
+
+  /* Compact error message */
+  .error-message {
+    padding: 6px 8px;
+    font-size: var(--font-size-xs);
+    margin-top: 6px;
+    border-radius: 4px;
+  }
+
+  /* Compact commands hint */
+  .commands-hint {
+    padding: 6px 8px;
+    font-size: var(--font-size-xs);
+    left: 8px;
+  }
+
+  /* Smaller loading text */
+  .loading-text {
+    font-size: var(--font-size-xs);
+  }
+
+  /* Compact attachment menu */
+  .attachment-menu {
+    min-width: 120px;
+    font-size: var(--font-size-sm);
+  }
+
+  .attachment-menu-item {
+    padding: 6px 10px;
+    font-size: var(--font-size-sm);
+    gap: 6px;
+  }
+
+  /* Smaller token counter */
+  .token-counter {
+    font-size: var(--font-size-xs);
+  }
+
+  /* Compact attachments display */
+  .attachments {
+    padding: 8px 8px 0;
+    gap: 6px;
+    font-size: var(--font-size-sm);
+  }
+
+  .attachment-chip {
+    padding: 3px;
+    font-size: var(--font-size-xs);
+    gap: 4px;
+    border-radius: 6px;
+  }
+
+  /* Smaller drag overlay text */
+  .drag-overlay .drag-text {
+    font-size: var(--font-size-sm);
+  }
+
+  /* Compact upload progress */
+  .upload-progress {
+    height: 1.5px;
+  }
+
+  /* Smaller message padding for better space usage */
+  .messages-container {
+    padding: 8px;
+    gap: 12px;
+    font-size: var(--font-size-base);
+  }
+
+  .message {
+    gap: 8px;
+    max-width: 95%;
+    font-size: var(--font-size-base);
+  }
+
+  .message-content {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: var(--font-size-base);
+  }
+
+  .message-text {
+    font-size: var(--font-size-base);
+  }
+
+  .message-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: var(--font-size-sm);
+  }
+
+  /* Mobile-specific attachment preview styles */
+  .attachment-preview {
+    padding: 6px;
+    gap: 6px;
+    font-size: var(--font-size-sm);
+    max-width: 180px;
+  }
+
+  .attachment-preview img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .message-attachments {
+    gap: 6px;
+    margin-top: 6px;
+    font-size: var(--font-size-sm);
+  }
+
+  .typing-message {
+    gap: 8px;
+    font-size: var(--font-size-base);
+  }
+
+  /* Compact header for mobile */
+  .header {
+    padding: 6px 8px;
+    min-height: 48px;
+  }
+
+  .header-left h1 {
+    font-size: 1.1rem;
+  }
+
+  .icon-button {
+    width: 36px;
+    height: 36px;
+    padding: 6px;
+  }
+
+  /* Smaller sidebar for mobile */
+  .sidebar {
+    width: 260px;
+  }
+
+  .sidebar-header {
+    padding: 12px;
+  }
+
+  .new-chat-btn {
+    padding: 6px 12px;
+    font-size: var(--font-size-sm);
+    gap: 4px;
+  }
+
+  .chats-list {
+    padding: 6px;
+  }
+
+  .chat-item {
+    padding: 8px;
+    font-size: var(--font-size-sm);
+  }
+
+  /* Compact install banner */
+  .install-banner {
+    padding: 8px;
+  }
+
+  .install-banner-text {
+    font-size: var(--font-size-sm);
+    gap: 6px;
+  }
+
+  .install-banner-text i {
+    font-size: var(--font-size-sm);
+  }
+
+  .install-button,
+  .dismiss-button {
+    padding: 4px 8px;
+    font-size: var(--font-size-xs);
+  }
+
+  /* Compact modal for mobile */
+  .modal {
+    margin: 16px;
+    padding: 16px;
+    max-width: 100%;
+    font-size: var(--font-size-sm);
+  }
+
+  .modal-header {
+    margin-bottom: 12px;
+  }
+
+  .modal-title {
+    font-size: var(--font-size-sm);
+  }
+
+  .modal form {
+    gap: 12px;
+  }
+
+  .modal label {
+    font-size: var(--font-size-xs);
+    margin-bottom: 2px;
+  }
+
+  .modal input[type='text'],
+  .modal input[type='password'],
+  .modal input[type='number'],
+  .modal select {
+    font-size: var(--font-size-sm);
+    padding: 6px 8px;
+  }
+
+  .modal .btn {
+    padding: 6px 12px;
+    font-size: var(--font-size-xs);
+  }
+
+  /* Mobile-specific styles for new composer */
+  .composer-card {
+    margin: 0 6px 6px;
+    border-radius: 12px;
+    font-size: var(--font-size-sm);
+  }
+
+  .composer-header {
+    padding: 8px 12px;
+    font-size: var(--font-size-xs);
+  }
+
+  .composer-header-toggle {
+    gap: 4px;
+  }
+
+  .composer-header-toggle span {
+    font-size: var(--font-size-xs);
+  }
+
+  .composer-toggle-switch {
+    width: 28px;
+    height: 14px;
+  }
+
+  .composer-toggle-switch::after {
+    width: 10px;
+    height: 10px;
+    top: 2px;
+    left: 2px;
+  }
+
+  .composer-toggle-switch.active::after {
+    transform: translateX(14px);
+  }
+
+  .composer-char-counter {
+    font-size: var(--font-size-xs);
+  }
+
+  .composer-suggestion-chips {
+    padding: 8px 12px 6px;
+    gap: 4px;
+  }
+
+  .composer-suggestion-chip {
+    padding: 4px 8px;
+    font-size: var(--font-size-xs);
+    border-radius: 12px;
+  }
+
+  .image-preview-area {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  .image-preview-item {
+    width: 60px;
+    height: 60px;
+  }
+
+  .composer-input-area {
+    padding: 8px 12px;
+    align-items: flex-start;
+  }
+
+  #composer-input {
+    font-size: var(--font-size-sm);
+    padding: 4px 0;
+  }
+
+  #composer-input::placeholder {
+    font-size: var(--font-size-sm);
+  }
+
+  .composer-actions {
+    gap: 6px;
+  }
+
+  .composer-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+  }
+
+  /* Mobile upload button container - ensure overlay works properly */
+  .upload-btn-container {
+    position: relative;
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    /* Ensure touch events work on mobile */
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+  }
+
+  .upload-btn {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    /* Ensure button is touchable on mobile */
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+    transition: all 0.2s ease;
+  }
+
+  .upload-btn:hover {
+    background: var(--bg-gray-100);
+    color: var(--text-color);
+    transform: scale(1.05);
+  }
+
+  .upload-btn:active {
+    background: var(--bg-gray-200);
+    transform: scale(0.95);
+  }
+
+  .upload-btn-container input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
+    /* Ensure touch events work on mobile */
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+    /* Prevent iOS zoom on focus */
+    font-size: 16px;
+    pointer-events: none;
+  }
+
+  /* Hide desktop message on mobile */
+  .desktop-message {
+    display: none;
+  }
+
+  /* Mobile-specific sidebar styles */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    height: calc(var(--vh) * 100);
+    z-index: 60; /* Higher than header */
+    width: 280px;
+    background: var(--bg-white);
+    box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+  }
+
+  .sidebar:not(.hidden) {
+    transform: translateX(0);
+  }
+
+  .sidebar-header {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: linear-gradient(135deg, var(--bg-gray-200) 0%, var(--bg-gray-100) 100%);
+    border-bottom: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    color: var(--text-color);
+  }
+
+  .new-chat-btn {
+    width: 100%;
+    justify-content: center;
+    padding: var(--spacing-md);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    margin: 0;
+    border-radius: 0;
+    background: var(--bg-gray-200);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+  }
+
+  .new-chat-btn:hover {
+    background: var(--bg-gray-100);
+    transform: none;
+  }
+
+  .chats-list {
+    padding: var(--spacing-sm);
+    padding-top: var(--spacing-md);
+  }
+
+  .chat-item {
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-white);
+  }
+
+  .chat-item:hover {
+    background: var(--bg-gray-100);
+    transform: none;
+    border-color: var(--border-color);
+  }
+
+  .chat-item.active {
+    background: linear-gradient(135deg, var(--bg-gray-200) 0%, var(--bg-gray-100) 100%);
+    color: var(--text-color);
+    border-color: var(--border-color);
+  }
+
+  .chat-delete {
+    visibility: visible;
+    opacity: 0.7;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(1);
+    transition: all var(--transition-fast);
+  }
+
+  .chat-item:hover .chat-delete {
+    opacity: 1;
+  }
+
+  .chat-delete:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  .chat-delete:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+
+  .chat-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .chat-rename {
+    visibility: visible;
+    opacity: 0.7;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(1);
+    transition: all var(--transition-fast);
+  }
+
+  .chat-item:hover .chat-rename {
+    opacity: 1;
+  }
+
+  .chat-rename:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  .chat-rename:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+
+  /* Mobile header adjustments */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  /* Mobile sidebar overlay */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 55;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-normal);
+  }
+
+  [data-theme="dark"] .sidebar-overlay {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .sidebar:not(.hidden) ~ .sidebar-overlay {
+    opacity: 1;
+    visibility: visible;
+  }
+}
