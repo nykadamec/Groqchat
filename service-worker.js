@@ -1,19 +1,23 @@
-const CACHE_NAME = 'groqchat-v1';
+const CACHE_NAME = 'groqchat-v2';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/js/main.js',
-  '/js/modules/config.js',
-  '/js/modules/i18n.js',
-  '/js/modules/settings.js',
-  '/js/modules/groq.js',
-  '/js/modules/chat.js',
-  '/js/modules/ui.js',
-  '/js/modules/pwa.js',
-  '/style/style.css',
-  '/locales/cs.json',
-  '/locales/en.json',
-  '/manifest.json',
+  './',
+  './index.html',
+  './js/main.js',
+  './js/modules/config.js',
+  './js/modules/i18n.js',
+  './js/modules/settings.js',
+  './js/modules/groq.js',
+  './js/modules/chat.js',
+  './js/modules/ui.js',
+  './js/modules/pwa.js',
+  './js/modules/composer.js',
+  './style/style.css',
+  './style/style-mobile.css',
+  './style/composer.css',
+  './locales/cs.json',
+  './locales/en.json',
+  './manifest.json',
+  './browserconfig.xml',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css'
 ];
 

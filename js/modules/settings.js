@@ -124,4 +124,15 @@ export function updateSettingsForm(form) {
 
   const saveBtn = form.querySelector('.btn-primary');
   if (saveBtn) saveBtn.textContent = t('app.save');
+
+  // Update API key buttons
+  const toggleApiKeyBtn = form.querySelector('#toggleApiKeyBtn');
+  if (toggleApiKeyBtn) {
+    toggleApiKeyBtn.title = t('app.showApiKey');
+  }
+
+  const copyApiKeyBtn = form.querySelector('#copyApiKeyBtn');
+  if (copyApiKeyBtn) {
+    copyApiKeyBtn.title = t('app.copyApiKey');
+  }
 }

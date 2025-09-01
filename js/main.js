@@ -134,9 +134,47 @@ function setupSettingsModal() {
     });
   }
 
-  // Setup other UI elements
-  const newChatBtn = document.getElementById('newChatBtn');
-  if (newChatBtn) newChatBtn.addEventListener('click', createNewChat);
+  // Setup API key visibility and copy buttons
+  const toggleApiKeyBtn = document.getElementById('toggleApiKeyBtn');
+  const copyApiKeyBtn = document.getElementById('copyApiKeyBtn');
+  const apiKeyInput = document.getElementById('apiKeyInput');
+
+  if (toggleApiKeyBtn && apiKeyInput) {
+    toggleApiKeyBtn.addEventListener('click', function() {
+      const isPassword = apiKeyInput.type === 'password';
+      apiKeyInput.type = isPassword ? 'text' : 'password';
+      this.querySelector('i').className = isPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
+      this.title = isPassword ? t('app.hideApiKey') : t('app.showApiKey');
+    });
+  }
+
+  if (copyApiKeyBtn && apiKeyInput) {
+    copyApiKeyBtn.addEventListener('click', async function() {
+      const apiKey = apiKeyInput.value.trim();
+      if (!apiKey) {
+        showError(t('app.noApiKeyToCopy'));
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(apiKey);
+        // Visual feedback
+        this.classList.add('copied');
+        this.querySelector('i').className = 'fas fa-check';
+        this.title = t('app.apiKeyCopied');
+
+        // Reset after 2 seconds
+        setTimeout(() => {
+          this.classList.remove('copied');
+          this.querySelector('i').className = 'fas fa-copy';
+          this.title = t('app.copyApiKey');
+        }, 2000);
+      } catch (error) {
+        console.error('Failed to copy API key:', error);
+        showError('Nepodařilo se zkopírovat API klíč');
+      }
+    });
+  }
 
   const menuBtn = document.getElementById('menuBtn');
   const sidebar = document.getElementById('sidebar');

@@ -20,6 +20,7 @@
   --font-size-base: 16px;
   --font-size-sm: 14px;
   --font-size-xs: 12px;
+  --font-size-lg: 18px;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 12px;
@@ -34,8 +35,8 @@
 
 /* Dark theme variables */
 [data-theme="dark"] {
-  --primary-color: #ffffff;
-  --primary-hover: #f5f5f5;
+  --primary-color: #10b981;
+  --primary-hover: #059669;
   --border-color: #333333;
   --text-color: #ffffff;
   --text-muted: #cccccc;
@@ -54,18 +55,21 @@
   --font-size-base: 14px;
   --font-size-sm: 12px;
   --font-size-xs: 10px;
+  --font-size-lg: 16px;
 }
 
 .font-size-normal {
   --font-size-base: 16px;
   --font-size-sm: 14px;
   --font-size-xs: 12px;
+  --font-size-lg: 18px;
 }
 
 .font-size-big {
   --font-size-base: 18px;
   --font-size-sm: 16px;
   --font-size-xs: 14px;
+  --font-size-lg: 20px;
 }
 
 * {
@@ -983,11 +987,13 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.4);
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(8px);
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 100;
+  padding: 20px;
 }
 
 .modal-overlay.active {
@@ -996,30 +1002,37 @@ body {
 
 .modal {
   background: var(--bg-white);
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-  max-width: 420px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.3);
+  max-width: 440px;
   width: 100%;
-  margin: 20px;
-  padding: 24px;
   position: relative;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow-y: auto;
-  font-size: var(--font-size-base);
+  border: 1px solid var(--border-color);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.modal::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and Opera */
 }
 
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 18px;
-  font-size: var(--font-size-base);
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-white);
+  border-radius: 16px 16px 0 0;
 }
 
 .modal-title {
   font-weight: 700;
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-lg);
   color: var(--text-color);
+  margin: 0;
 }
 
 .modal-close-button {
@@ -1027,15 +1040,15 @@ body {
   border: none;
   cursor: pointer;
   color: var(--text-muted);
-  transition: .2s;
+  transition: all .2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  padding: 8px;
   border-radius: 8px;
-  width: 32px;
-  height: 32px;
-  font-size: var(--font-size-sm);
+  width: 36px;
+  height: 36px;
+  font-size: var(--font-size-base);
 }
 
 .modal-close-button:hover {
@@ -1046,15 +1059,76 @@ body {
 .modal form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  font-size: var(--font-size-base);
+  gap: 24px; /* Increased gap between form elements */
+  padding: 24px;
 }
 
 .modal label {
   font-weight: 600;
   font-size: var(--font-size-sm);
   color: var(--text-muted);
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  display: block;
+  height: 20px; /* Exact height for all labels */
+  line-height: 1.4;
+}
+
+/* API Key Label with Buttons */
+.label-with-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  height: 20px; /* Same height as other labels */
+}
+
+.label-with-buttons label {
+  margin-bottom: 0;
+  flex: 1;
+  height: 20px; /* Exact height matching other labels */
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+}
+
+.api-key-header-buttons {
+  display: flex;
+  gap: 6px; /* Reduced gap between buttons */
+  align-items: center;
+}
+
+.api-key-header-btn {
+  width: 24px; /* Smaller buttons */
+  height: 24px; /* Smaller buttons */
+  border: none;
+  background: var(--bg-gray-100);
+  border-radius: 4px; /* Smaller border radius */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  font-size: var(--font-size-xs); /* Smaller font size */
+}
+
+.api-key-header-btn:hover {
+  background: var(--primary-color);
+  color: white;
+  transform: scale(1.05);
+}
+
+.api-key-header-btn:active {
+  transform: scale(0.95);
+}
+
+.api-key-header-btn.copied {
+  background: var(--success-color);
+  color: white;
+}
+
+.api-key-header-btn.copied i::before {
+  content: "\f00c"; /* check icon */
 }
 
 .modal input[type='text'],
@@ -1062,12 +1136,14 @@ body {
 .modal input[type='number'],
 .modal select {
   font-size: var(--font-size-base);
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
   outline-offset: 2px;
-  transition: border-color .2s;
+  transition: all .2s;
   width: 100%;
+  background: var(--bg-white);
+  color: var(--text-color);
 }
 
 .modal input[type='text']:focus,
@@ -1075,56 +1151,64 @@ body {
 .modal input[type='number']:focus,
 .modal select:focus {
   border-color: var(--primary-color);
-  outline-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  outline: none;
 }
 
 .modal .checkbox-group {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: var(--font-size-sm);
+  gap: 10px;
+  font-size: var(--font-size-base);
+  padding: 12px 0;
 }
 
 .modal .checkbox-group input[type='checkbox'] {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
-  font-size: var(--font-size-sm);
+  accent-color: var(--primary-color);
 }
 
 .modal .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  font-size: var(--font-size-sm);
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
 }
 
 .modal .btn {
-  padding: 8px 16px;
+  padding: 12px 20px;
   font-weight: 600;
-  font-size: var(--font-size-sm);
-  border-radius: 8px;
+  font-size: var(--font-size-base);
+  border-radius: 10px;
   border: none;
   cursor: pointer;
-  transition: background-color .2s;
+  transition: all .2s;
+  min-width: 100px;
 }
 
 .modal .btn-primary {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
   color: #fff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .modal .btn-primary:hover {
-  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
 }
 
 .modal .btn-secondary {
-  background-color: var(--bg-gray-100);
+  background: var(--bg-gray-100);
   color: var(--text-muted);
+  border: 1px solid var(--border-color);
 }
 
 .modal .btn-secondary:hover {
-  background-color: var(--border-color);
+  background: var(--bg-gray-200);
+  color: var(--text-color);
 }
 
 /* Install PWA Banner */
@@ -1222,5 +1306,69 @@ body {
     margin: 8px 0;
     color: var(--text-muted);
     font-size: var(--font-size-sm);
+  }
+}
+
+/* Mobile-specific API Key Container */
+@media (max-width: 768px) {
+  .api-key-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .api-key-container input {
+    flex: 1;
+    padding-right: 80px; /* Adjusted for smaller buttons */
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-white);
+    color: var(--text-color);
+    font-size: var(--font-size-base);
+    transition: border-color 0.2s;
+  }
+
+  .api-key-container input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+  }
+
+  .api-key-btn {
+    position: absolute;
+    right: 12px;
+    width: 24px; /* Smaller buttons for mobile */
+    height: 24px; /* Smaller buttons for mobile */
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    font-size: var(--font-size-xs); /* Smaller font size */
+  }
+
+  .api-key-btn:hover {
+    background: var(--bg-gray-100);
+    color: var(--text-color);
+  }
+
+  .api-key-btn:active {
+    transform: scale(0.9);
+  }
+
+  .api-key-btn:first-of-type {
+    right: 38px; /* Adjusted position for smaller buttons */
+  }
+
+  .api-key-btn.copied {
+    background: var(--success-color);
+    color: white;
+  }
+
+  .api-key-btn.copied i::before {
+    content: "\f00c"; /* check icon */
   }
 }

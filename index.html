@@ -3,6 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#10b981" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="GroqChat" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="msapplication-TileColor" content="#10b981" />
+  <meta name="msapplication-config" content="/browserconfig.xml" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='96' fill='%2310b981'/><text x='96' y='110' font-family='Arial,sans-serif' font-size='80' fill='white' text-anchor='middle' font-weight='bold'>AI</text></svg>" />
   <title>AI Chat Assistant with Vision</title>
   <!-- Font Awesome CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -168,8 +176,18 @@
       </div>
       <form id="settingsForm">
         <div>
-          <label for="apiKeyInput">Groq API Key</label>
-          <input type="password" id="apiKeyInput" name="apiKey" autocomplete="off" 
+          <div class="label-with-buttons">
+            <label for="apiKeyInput">Groq API Key</label>
+            <div class="api-key-header-buttons">
+              <button type="button" id="toggleApiKeyBtn" class="api-key-header-btn" title="Zobrazit API klíč">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button type="button" id="copyApiKeyBtn" class="api-key-header-btn" title="Kopírovat API klíč">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+          </div>
+          <input type="password" id="apiKeyInput" name="apiKey" autocomplete="off"
             placeholder="Vložte váš Groq API klíč" />
         </div>
         <div>

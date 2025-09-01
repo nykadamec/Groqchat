@@ -216,6 +216,9 @@ export function toggleTheme() {
       icon.className = 'fas fa-moon';
     }
   }
+
+  // Update iOS status bar and theme color
+  updateIOSMetaTags(newTheme);
 }
 
 export function loadTheme() {
@@ -231,6 +234,37 @@ export function loadTheme() {
     } else {
       icon.className = 'fas fa-moon';
     }
+  }
+
+  // Update iOS status bar and theme color
+  updateIOSMetaTags(savedTheme);
+}
+
+function updateIOSMetaTags(theme) {
+  // Get the computed style to access CSS variables
+  const root = document.documentElement;
+  const computedStyle = getComputedStyle(root);
+
+  // Get header background color (first color of gradient)
+  const headerBgColor = computedStyle.getPropertyValue('--bg-gray-200').trim();
+
+  // Update theme-color meta tag
+  let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeColorMeta) {
+    themeColorMeta.setAttribute('content', headerBgColor);
+  }
+
+  // Update iOS status bar style - use black-translucent for transparent effect
+  let statusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if (statusBarMeta) {
+    // Use black-translucent for both themes to make status bar transparent
+    statusBarMeta.setAttribute('content', 'black-translucent');
+  }
+
+  // Update Windows tile color
+  let tileColorMeta = document.querySelector('meta[name="msapplication-TileColor"]');
+  if (tileColorMeta) {
+    tileColorMeta.setAttribute('content', headerBgColor);
   }
 }
 
