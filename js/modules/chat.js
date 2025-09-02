@@ -1,8 +1,9 @@
 // ---- Chat Management ----
 import { MAX_RETRIES, SEND_COOLDOWN } from './config.js';
 import { t } from './i18n.js';
-import { getGroqInstance, showError, validateApiKey } from './groq.js';
+import { getGroqInstance, showError, validateApiKey, isValidApiKey } from './groq.js';
 import { getCurrentSettings } from './settings.js';
+import { logger } from './logger.js';
 
 let chats = {};
 let currentChatId = null;
@@ -52,36 +53,51 @@ export function generateChatTitle(content, attachments = []) {
 }
 
 export function createNewChat() {
-  const chatId = generateChatId();
-  const newChat = {
-    id: chatId,
-    title: t('app.newChatTitle'),
-    messages: [],
-    createdAt: Date.now()
-  };
+  try {
+    logger.info('Chat', 'Creating new chat');
+    const chatId = generateChatId();
+    const newChat = {
+      id: chatId,
+      title: t('app.newChatTitle'),
+      messages: [],
+      createdAt: Date.now()
+    };
 
-  chats[chatId] = newChat;
-  currentChatId = chatId;
+    chats[chatId] = newChat;
+    currentChatId = chatId;
+    logger.info('Chat', 'New chat object created', { chatId, title: newChat.title });
 
-  clearMessages();
-  attachments = [];
-  updateAttachments();
-  const textarea = document.getElementById('composer-input');
-  if (textarea) {
-    textarea.value = '';
-    adjustTextareaHeight();
+    clearMessages();
+    attachments = [];
+    updateAttachments();
+    const textarea = document.getElementById('composer-input');
+    if (textarea) {
+      textarea.value = '';
+      adjustTextareaHeight();
+    }
+    const sendButton = document.getElementById('sendButton');
+    if (sendButton) sendButton.disabled = true;
+
+    updateChatsList();
+    saveChats();
+    logger.info('Chat', 'New chat created successfully', { chatId });
+  } catch (error) {
+    logger.error('Chat', 'Error creating new chat', { error: error.message, stack: error.stack });
+    throw error;
   }
-  const sendButton = document.getElementById('sendButton');
-  if (sendButton) sendButton.disabled = true;
-
-  updateChatsList();
-  saveChats();
-
-  return chatId;
 }
 
 export function switchToChat(chatId) {
   if (currentChatId === chatId) return;
+
+  // Clean up current attachments URLs to prevent memory leaks
+  attachments.forEach(att => {
+    if (att.url) {
+      URL.revokeObjectURL(att.url);
+    }
+  });
+  attachments.length = 0;
+  updateAttachments();
 
   currentChatId = chatId;
   const chat = chats[chatId];
@@ -287,52 +303,62 @@ export function adjustTextareaHeight() {
 }
 
 export async function handleFiles(files) {
-  for (const file of Array.from(files)) {
-    if (file.size > 5*1024*1024) {
-      showError(`${t('app.fileTooLarge')} (${file.name})`);
-      return;
-    }
-    const att = {
-      id: Date.now() + Math.random(),
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      file
-    };
-
-    // For images, create both blob URL and base64 for better mobile compatibility
-    if (file.type.startsWith('image/')) {
-      att.url = URL.createObjectURL(file);
-      try {
-        att.base64 = await fileToBase64(file);
-      } catch (error) {
-        console.error('Error converting image to base64:', error);
+  try {
+    for (const file of Array.from(files)) {
+      if (file.size > 5*1024*1024) {
+        showError(`${t('app.fileTooLarge')} (${file.name})`);
+        return;
       }
-    }
+      const att = {
+        id: Date.now() + Math.random(),
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        file
+      };
 
-    attachments.push(att);
-  }
-  updateAttachments();
-  const sendButton = document.getElementById('sendButton');
-  if (sendButton) {
-    sendButton.disabled = document.getElementById('composer-input')?.value.trim() === '' && attachments.length === 0;
+      // For images, create both blob URL and base64 for better mobile compatibility
+      if (file.type.startsWith('image/')) {
+        att.url = URL.createObjectURL(file);
+        try {
+          att.base64 = await fileToBase64(file);
+        } catch (error) {
+          console.error('Error converting image to base64:', error);
+        }
+      }
+
+      attachments.push(att);
+    }
+    updateAttachments();
+    const sendButton = document.getElementById('sendButton');
+    if (sendButton) {
+      sendButton.disabled = document.getElementById('composer-input')?.value.trim() === '' && attachments.length === 0;
+    }
+  } catch (error) {
+    console.error('Error handling files:', error);
+    logger.error('Chat', 'File handling error', { error: error.message, files: files.length });
+    showError(t('app.fileUploadError') || 'Chyba při nahrávání souboru');
   }
 }
 
 export function updateAttachments() {
-  const attachmentsContainer = document.getElementById('attachments');
-  if (!attachmentsContainer) return;
+  try {
+    const attachmentsContainer = document.getElementById('attachments');
+    if (!attachmentsContainer) return;
 
-  attachmentsContainer.innerHTML = '';
-  if (!attachments.length) {
-    attachmentsContainer.classList.remove('active');
-    return;
-  }
-  attachmentsContainer.classList.add('active');
+    attachmentsContainer.innerHTML = '';
+    if (!attachments.length) {
+      attachmentsContainer.classList.remove('active');
+      return;
+    }
+    attachmentsContainer.classList.add('active');
 
-  // Call the composer's updateImagePreview function if available
-  if (window.composerModule && window.composerModule.updateImagePreview) {
-    window.composerModule.updateImagePreview();
+    // Call the composer's updateImagePreview function if available
+    if (window.composerModule && window.composerModule.updateImagePreview) {
+      window.composerModule.updateImagePreview();
+    }
+  } catch (error) {
+    console.error('Error updating attachments:', error);
   }
 }
 
@@ -340,7 +366,10 @@ export function removeAttachment(id) {
   const idx = attachments.findIndex(a => a.id == id);
   if (idx > -1) {
     const a = attachments[idx];
-    if (a.url) URL.revokeObjectURL(a.url);
+    // Clean up blob URL to prevent memory leaks
+    if (a.url) {
+      URL.revokeObjectURL(a.url);
+    }
     attachments.splice(idx, 1);
     updateAttachments();
     const sendButton = document.getElementById('sendButton');
@@ -349,6 +378,17 @@ export function removeAttachment(id) {
       sendButton.disabled = textarea?.value.trim() === '' && attachments.length === 0;
     }
   }
+}
+
+// Clean up all attachment URLs to prevent memory leaks
+export function cleanupAllAttachmentURLs() {
+  attachments.forEach(att => {
+    if (att.url) {
+      URL.revokeObjectURL(att.url);
+    }
+  });
+  attachments.length = 0;
+  updateAttachments();
 }
 
 export function displayChatHistory(messages = []) {
@@ -486,8 +526,9 @@ export async function sendMessage() {
 
   const groq = getGroqInstance();
   const settings = getCurrentSettings();
-  if (!groq || !settings.apiKey || !validateApiKey(settings.apiKey)) {
-    showError(t('app.invalidApiKeyError'));
+  const apiKeyValidation = validateApiKey(settings.apiKey);
+  if (!groq || !settings.apiKey || !apiKeyValidation.isValid) {
+    showError(apiKeyValidation.error || t('app.invalidApiKeyError'));
     return;
   }
 
@@ -535,6 +576,12 @@ export async function sendMessage() {
   }
 
   if (textarea) textarea.value = '';
+  // Clean up attachment URLs after sending to prevent memory leaks
+  attachments.forEach(att => {
+    if (att.url) {
+      URL.revokeObjectURL(att.url);
+    }
+  });
   attachments = [];
   updateAttachments();
   adjustTextareaHeight();

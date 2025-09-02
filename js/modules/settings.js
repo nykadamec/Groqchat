@@ -2,6 +2,7 @@
 import { DEFAULT_SETTINGS } from './config.js';
 import { loadLanguage, t } from './i18n.js';
 import { updateUILanguage } from './ui.js';
+import { validateApiKey, showError } from './groq.js';
 
 let currentSettings = { ...DEFAULT_SETTINGS };
 
@@ -23,6 +24,15 @@ export async function loadSettings() {
 }
 
 export async function saveSettings(newSettings) {
+  // Validate API key if provided
+  if (newSettings.apiKey !== undefined && newSettings.apiKey !== '') {
+    const validation = validateApiKey(newSettings.apiKey);
+    if (!validation.isValid) {
+      showError(validation.error);
+      throw new Error(validation.error);
+    }
+  }
+  
   const previousLanguage = currentSettings.language;
   currentSettings = { ...currentSettings, ...newSettings };
   localStorage.setItem('chatSettings', JSON.stringify(currentSettings));

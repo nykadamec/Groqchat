@@ -1,7 +1,8 @@
 // ---- UI Management ----
 import { t } from './i18n.js';
 import { getCurrentSettings } from './settings.js';
-import { handleFiles, removeAttachment, adjustTextareaHeight, updateAttachments, getAttachments } from './chat.js';
+import { handleFiles, removeAttachment, adjustTextareaHeight, updateAttachments, getAttachments, createNewChat } from './chat.js';
+import { logger } from './logger.js';
 
 let enterToSend = false;
 
@@ -281,6 +282,21 @@ export function setupEventListeners() {
   if (isMobileDevice) {
     setupViewportHandling();
     adjustLayoutForViewport();
+  }
+
+  // New Chat Button
+  const newChatBtn = getElement('newChatBtn');
+  if (newChatBtn) {
+    newChatBtn.addEventListener('click', function() {
+      try {
+        logger.info('UI', 'User clicked new chat button');
+        createNewChat();
+        logger.info('UI', 'New chat created successfully');
+      } catch (error) {
+        logger.error('UI', 'Error creating new chat', { error: error.message, stack: error.stack });
+        console.error('Error creating new chat:', error);
+      }
+    });
   }
 
   // Composer input

@@ -1,6 +1,7 @@
 // ---- Composer UI Management ----
 import { handleFiles, removeAttachment, adjustTextareaHeight, updateAttachments, getAttachments } from './chat.js';
 import { t } from './i18n.js';
+import { logger } from './logger.js';
 
 // Progress tracking for image uploads
 let uploadProgress = 0;
@@ -8,22 +9,23 @@ let isUploading = false;
 
 // Update image preview display
 export function updateImagePreview() {
-  const attachments = getAttachments();
-  const previewArea = document.getElementById('attachments');
+  try {
+    const attachments = getAttachments();
+    const previewArea = document.getElementById('attachments');
 
-  if (!previewArea) return;
+    if (!previewArea) return;
 
-  // Clear existing previews
-  previewArea.innerHTML = '';
+    // Clear existing previews
+    previewArea.innerHTML = '';
 
-  // Check if we have any attachments
-  if (attachments.length === 0) {
-    previewArea.classList.remove('active');
-    return;
-  }
+    // Check if we have any attachments
+    if (attachments.length === 0) {
+      previewArea.classList.remove('active');
+      return;
+    }
 
-  // Show the preview area
-  previewArea.classList.add('active');
+    // Show the preview area
+    previewArea.classList.add('active');
 
   // Create preview elements for each attachment
   attachments.forEach(async (attachment) => {
@@ -88,6 +90,13 @@ export function updateImagePreview() {
       previewArea.appendChild(fileChip);
     }
   });
+  } catch (error) {
+    console.error('Error updating image preview:', error);
+    logger.error('Composer', 'Image preview update error', { error: error.message, attachmentCount: attachments.length });
+    // Fallback: hide preview area on error
+    const previewArea = document.getElementById('attachments');
+    if (previewArea) previewArea.classList.remove('active');
+  }
 }
 
 // Show upload progress
@@ -137,9 +146,10 @@ export function completeUploadProgress() {
 
 // Setup event listeners for the new composer
 export function setupComposerEventListeners() {
-  // Image upload button handling
-  const imageInput = document.getElementById('imageInput');
-  const uploadBtn = document.querySelector('.upload-btn');
+  try {
+    // Image upload button handling
+    const imageInput = document.getElementById('imageInput');
+    const uploadBtn = document.querySelector('.upload-btn');
 
   if (imageInput && uploadBtn) {
     console.log('Setting up upload button handlers');
@@ -160,25 +170,34 @@ export function setupComposerEventListeners() {
       }
     });
 
-    // Add touchstart handler for better mobile support
+    // Improved mobile handling - prevent double triggers
+    let isHandlingTouch = false;
+    
+    // Handle click for desktop
+    uploadBtn.addEventListener('click', (e) => {
+      if (isHandlingTouch) {
+        e.preventDefault();
+        return;
+      }
+      console.log('Upload button clicked (desktop)');
+      imageInput.click();
+    });
+
+    // Handle touch for mobile devices
     uploadBtn.addEventListener('touchstart', (e) => {
       console.log('Upload button touchstart');
-      e.preventDefault();
-      // Don't trigger click here, let the input handle it
+      isHandlingTouch = true;
+      // Reset flag after a delay to allow for future interactions
+      setTimeout(() => { isHandlingTouch = false; }, 300);
     });
 
-    // Also add click handler to button as backup
-    uploadBtn.addEventListener('click', (e) => {
-      console.log('Upload button clicked');
-      // Don't prevent default, let the input handle the click
-    });
-
-    // Add touchend handler for mobile
     uploadBtn.addEventListener('touchend', (e) => {
       console.log('Upload button touchend');
       e.preventDefault();
-      // Trigger the file input
-      if (imageInput) {
+      e.stopPropagation();
+      
+      // Only trigger if we haven't already triggered
+      if (imageInput && isHandlingTouch) {
         console.log('Triggering file input click from touchend');
         imageInput.click();
       }
@@ -197,6 +216,10 @@ export function setupComposerEventListeners() {
         if (id) removeAttachment(id);
       }
     });
+  }
+  } catch (error) {
+    console.error('Error setting up composer event listeners:', error);
+    logger.error('Composer', 'Event listener setup error', { error: error.message });
   }
 }
 

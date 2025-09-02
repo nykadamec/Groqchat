@@ -20,6 +20,17 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <!-- Application Loading Overlay -->
+  <div id="appLoadingOverlay" class="app-loading-overlay">
+    <div class="app-loading-content">
+      <div class="app-loading-spinner"></div>
+      <h2>GroqChat</h2>
+      <p id="loadingStatus">Načítám aplikaci...</p>
+      <div class="app-loading-progress">
+        <div class="app-loading-progress-bar" id="loadingProgressBar"></div>
+      </div>
+    </div>
+  </div>
   <!-- Sidebar -->
   <div class="sidebar hidden" id="sidebar">
     <div class="sidebar-header">
@@ -224,6 +235,20 @@
           <input type="checkbox" id="historyToggle" name="history" checked />
           <label for="historyToggle">Ukládat historii chatu</label>
         </div>
+        
+        <!-- Log Management Section -->
+        <div class="settings-section">
+          <h3>Správa logů</h3>
+          <div class="log-management-buttons">
+            <button type="button" id="exportLogsBtn" class="btn btn-secondary">
+              <i class="fas fa-download"></i> Exportovat logy
+            </button>
+            <button type="button" id="clearLogsBtn" class="btn btn-secondary">
+              <i class="fas fa-trash"></i> Smazat logy
+            </button>
+          </div>
+        </div>
+        
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary" id="cancelSettingsBtn">Zrušit</button>
           <button type="submit" class="btn btn-primary">Uložit</button>

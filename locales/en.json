@@ -69,6 +69,14 @@
     "install": "Install",
     "dismiss": "Dismiss",
     "seconds": "s",
-    "removeAttachment": "Remove attachment"
+    "removeAttachment": "Remove attachment",
+    "loadingInit": "Initializing application...",
+    "loadingSettings": "Loading settings...",
+    "loadingLanguage": "Loading language files...",
+    "loadingAPI": "Connecting to API...",
+    "loadingUI": "Preparing user interface...",
+    "loadingPWA": "Registering Service Worker...",
+    "loadingComplete": "Application ready!",
+    "fileUploadError": "File upload error"
   }
 }

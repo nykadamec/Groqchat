@@ -69,6 +69,14 @@
     "install": "Nainstalovat",
     "dismiss": "Zavřít",
     "seconds": "s",
-    "removeAttachment": "Odebrat přílohu"
+    "removeAttachment": "Odebrat přílohu",
+    "loadingInit": "Inicializuji aplikaci...",
+    "loadingSettings": "Načítám nastavení...",
+    "loadingLanguage": "Načítám jazykové soubory...",
+    "loadingAPI": "Připojuji k API...",
+    "loadingUI": "Připravuji uživatelské rozhraní...",
+    "loadingPWA": "Registruji Service Worker...",
+    "loadingComplete": "Aplikace je připravena!",
+    "fileUploadError": "Chyba při nahrávání souboru"
   }
 }

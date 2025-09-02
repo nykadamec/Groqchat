@@ -26,6 +26,8 @@ import {
 import { updateUILanguage, toggleTheme, loadTheme, applyFontSize, setupEventListeners } from './modules/ui.js';
 import { registerServiceWorker, setupInstallPrompt, setupInstallEventListeners } from './modules/pwa.js';
 import { initComposer } from './modules/composer.js';
+import { initLoading, updateLoadingStep, hideLoading, handleLoadingError } from './modules/loading.js';
+import { initLogger, loadStoredLogs, logger, exportLogs, clearLogs } from './modules/logger.js';
 
 // Global reference for external access
 window.chatModule = {
@@ -41,30 +43,55 @@ window.chatModule = {
 // ---- Main Initialization ----
 async function initApp() {
   try {
+    // Initialize logging system first
+    initLogger();
+    loadStoredLogs();
+    logger.info('App', 'Application initialization started');
+    
+    // Initialize loading system
+    initLoading();
+    updateLoadingStep('init');
+    
     // Load settings first
+    updateLoadingStep('settings');
+    logger.info('App', 'Loading settings');
     const settings = await loadSettings();
 
+    // Load language
+    updateLoadingStep('language');
+    logger.info('App', 'Loading language files');
+    await new Promise(resolve => setTimeout(resolve, 300)); // Small delay for visual feedback
+
     // Initialize Groq if API key is available
+    updateLoadingStep('api');
     if (settings.apiKey) {
+      logger.info('App', 'Initializing Groq API');
       await initializeGroq(settings.apiKey);
     }
+    await new Promise(resolve => setTimeout(resolve, 200));
 
-    // Apply theme and font size
+    // Setup UI
+    updateLoadingStep('ui');
+    logger.info('App', 'Setting up UI');
     loadTheme();
     applyFontSize(settings.fontSize);
 
     // Load chats if history is enabled
     if (settings.saveHistory) {
+      logger.info('App', 'Loading chat history');
       loadChats();
     } else if (Object.keys(getChats()).length === 0) {
+      logger.info('App', 'Creating new chat');
       createNewChat();
     }
 
-    // Setup UI
     updateUILanguage();
     setupEventListeners();
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     // Setup PWA
+    updateLoadingStep('pwa');
+    logger.info('App', 'Setting up PWA features');
     registerServiceWorker();
     setupInstallPrompt();
     setupInstallEventListeners();
@@ -78,8 +105,15 @@ async function initApp() {
     // Initial textarea adjustment
     adjustTextareaHeight();
 
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    // Complete loading
+    updateLoadingStep('complete');
+    logger.info('App', 'Application initialization completed successfully');
+
   } catch (error) {
-    console.error('Error initializing app:', error);
+    logger.error('App', 'Error initializing application', { error: error.message, stack: error.stack });
+    handleLoadingError(error, 'init');
     showError('Chyba při inicializaci aplikace');
   }
 }
@@ -118,19 +152,24 @@ function setupSettingsModal() {
   if (settingsForm) {
     settingsForm.addEventListener('submit', async function(e) {
       e.preventDefault();
-      const formData = new FormData(this);
-      const settings = {
-        apiKey: formData.get('apiKey'),
-        model: formData.get('model'),
-        temperature: parseFloat(formData.get('temperature')),
-        maxTokens: parseInt(formData.get('maxTokens')),
-        fontSize: formData.get('fontSize'),
-        language: formData.get('language'),
-        saveHistory: formData.get('history') === 'on'
-      };
-      await saveSettings(settings);
-      closeSettings();
-      showError(t('app.settingsSaved'));
+      try {
+        const formData = new FormData(this);
+        const settings = {
+          apiKey: formData.get('apiKey'),
+          model: formData.get('model'),
+          temperature: parseFloat(formData.get('temperature')),
+          maxTokens: parseInt(formData.get('maxTokens')),
+          fontSize: formData.get('fontSize'),
+          language: formData.get('language'),
+          saveHistory: formData.get('history') === 'on'
+        };
+        await saveSettings(settings);
+        closeSettings();
+        showError(t('app.settingsSaved'));
+      } catch (error) {
+        console.error('Error saving settings:', error);
+        // Error is already shown by saveSettings via showError
+      }
     });
   }
 
@@ -172,6 +211,34 @@ function setupSettingsModal() {
       } catch (error) {
         console.error('Failed to copy API key:', error);
         showError('Nepodařilo se zkopírovat API klíč');
+      }
+    });
+  }
+
+  // Setup log management buttons
+  const exportLogsBtn = document.getElementById('exportLogsBtn');
+  const clearLogsBtn = document.getElementById('clearLogsBtn');
+
+  if (exportLogsBtn) {
+    exportLogsBtn.addEventListener('click', function() {
+      logger.info('Settings', 'User requested log export');
+      if (exportLogs()) {
+        showError('Logy byly úspěšně exportovány');
+      } else {
+        showError('Chyba při exportu logů');
+      }
+    });
+  }
+
+  if (clearLogsBtn) {
+    clearLogsBtn.addEventListener('click', function() {
+      if (confirm('Opravdu chcete smazat všechny logy? Tato akce nelze vrátit zpět.')) {
+        logger.info('Settings', 'User requested log clearing');
+        if (clearLogs()) {
+          showError('Logy byly úspěšně smazány');
+        } else {
+          showError('Chyba při mazání logů');
+        }
       }
     });
   }
